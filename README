@@ -1,0 +1,95 @@
+
+Pipe Dump Utility & Library
+===========================
+
+   Pipe Dump is a utility which captures the data sent to STDIN and from
+   STDOUT/STDERR of a program.  This is accomplished using fork() and pipe()
+   to transmit and receive data from the forked process to the pipe dump
+   utility.  Captured data is stored in a file using the libpcap file format.
+   This is useful for capturing interactions with commands executed
+   from an SSH connection.
+
+
+Contents
+--------
+
+   1. Disclaimer
+   2. Software Requirements
+   3. Maintainers
+   4. Community
+   5. Source Code
+
+
+Disclaimer
+----------
+
+   This software is provided by the copyright holders and contributors "as
+   is" and any express or implied warranties, including, but not limited to,
+   the implied warranties of merchantability and fitness for a particular
+   purpose are disclaimed. In no event shall Bindle Binaries be liable for
+   any direct, indirect, incidental, special, exemplary, or consequential
+   damages (including, but not limited to, procurement of substitute goods or
+   services; loss of use, data, or profits; or business interruption) however
+   caused and on any theory of liability, whether in contract, strict
+   liability, or tort (including negligence or otherwise) arising in any way
+   out of the use of this software, even if advised of the possibility of
+   such damage.
+
+
+Software Requirements
+---------------------
+
+   * Git 1.7
+   * GCC/LLVM
+   * GNU Autoconf
+   * GNU Automake
+   * GNU Libtool
+
+
+Maintainers
+-----------
+
+   David M. Syzdek,  
+   Bindle Binaries,  
+   syzdek@bindlebinaries.com
+
+
+Community
+---------
+
+   Source Code Repository:  
+   https://github.com/bindle/LdapKit/
+
+   Documentation:  
+   http://bindle.github.com/LdapKit/
+
+   Wiki:  
+   https://github.com/bindle/iOSPorts/wiki
+
+   Issue Tracking:  
+   https://github.com/bindle/iOSPorts/issues
+
+
+Source Code
+-----------
+
+The source code for this project is maintained using git (http://git-scm.com).
+The following contains information to checkout the source code from the git
+repository.
+
+   Git URLs:
+      git://github.com/bindle/pipedump.git
+
+   Downloading Source:
+      $ git clone --recursive, git://github.com/bindle/pipedump.git
+
+   Preparing Source:
+      $ cd piepdump
+      $ autoreconf -I ./m4/ -I ./contrib/bindletools/m4/ -i
+
+   Git Branches:
+      master - Current release of packages.
+      next   - changes staged for next release
+      pu     - proposed updates for next release
+      xx/yy+ - branch for testing new changes before merging to 'pu' branch
+

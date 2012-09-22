@@ -1,0 +1,138 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 46;
+	objects = {
+
+/* Begin PBXFileReference section */
+		A02AAEB6160E6DD2002856CD /* acinclude.m4 */ = {isa = PBXFileReference; explicitFileType = text.script; name = acinclude.m4; path = ../acinclude.m4; sourceTree = "<group>"; };
+		A02AAEB7160E6DD2002856CD /* configure.ac */ = {isa = PBXFileReference; explicitFileType = text.script; name = configure.ac; path = ../configure.ac; sourceTree = "<group>"; };
+		A02AAEB8160E6DD2002856CD /* COPYING */ = {isa = PBXFileReference; lastKnownFileType = text; name = COPYING; path = ../COPYING; sourceTree = "<group>"; };
+		A02AAEBA160E6DD2002856CD /* README */ = {isa = PBXFileReference; lastKnownFileType = text; name = README; path = ../README; sourceTree = "<group>"; };
+		A02AAEBC160E708B002856CD /* Makefile.am */ = {isa = PBXFileReference; explicitFileType = sourcecode.make; indentWidth = 8; name = Makefile.am; path = ../Makefile.am; sourceTree = SOURCE_ROOT; tabWidth = 8; usesTabs = 1; };
+		A02AAECB160E7324002856CD /* bindletools.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = bindletools.xcodeproj; path = bindletools/bindletools.xcodeproj; sourceTree = "<group>"; };
+		A02AAED1160E7447002856CD /* AUTHORS */ = {isa = PBXFileReference; lastKnownFileType = text; name = AUTHORS; path = ../AUTHORS; sourceTree = "<group>"; };
+		A02AAED2160E7447002856CD /* ChangeLog */ = {isa = PBXFileReference; lastKnownFileType = text; name = ChangeLog; path = ../ChangeLog; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXGroup section */
+		A02AAEAA160E6CA6002856CD = {
+			isa = PBXGroup;
+			children = (
+				A02AAEB6160E6DD2002856CD /* acinclude.m4 */,
+				A02AAED1160E7447002856CD /* AUTHORS */,
+				A02AAED2160E7447002856CD /* ChangeLog */,
+				A02AAEB7160E6DD2002856CD /* configure.ac */,
+				A02AAEB8160E6DD2002856CD /* COPYING */,
+				A02AAEBC160E708B002856CD /* Makefile.am */,
+				A02AAEBA160E6DD2002856CD /* README */,
+				A02AAEC1160E72BA002856CD /* build-aux */,
+				A02AAEC4160E72BA002856CD /* lib */,
+				A02AAEC8160E72BA002856CD /* src */,
+				A02AAECA160E72FF002856CD /* contrib */,
+			);
+			indentWidth = 3;
+			sourceTree = "<group>";
+			tabWidth = 3;
+			usesTabs = 0;
+		};
+		A02AAEC1160E72BA002856CD /* build-aux */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			name = "build-aux";
+			path = "../build-aux";
+			sourceTree = SOURCE_ROOT;
+		};
+		A02AAEC4160E72BA002856CD /* lib */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			name = lib;
+			path = ../lib;
+			sourceTree = SOURCE_ROOT;
+		};
+		A02AAEC8160E72BA002856CD /* src */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			name = src;
+			path = ../src;
+			sourceTree = SOURCE_ROOT;
+		};
+		A02AAECA160E72FF002856CD /* contrib */ = {
+			isa = PBXGroup;
+			children = (
+				A02AAECB160E7324002856CD /* bindletools.xcodeproj */,
+			);
+			name = contrib;
+			path = ../contrib;
+			sourceTree = SOURCE_ROOT;
+		};
+		A02AAECC160E7324002856CD /* Products */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXProject section */
+		A02AAEAC160E6CA6002856CD /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				LastUpgradeCheck = 0450;
+			};
+			buildConfigurationList = A02AAEAF160E6CA6002856CD /* Build configuration list for PBXProject "pipedump" */;
+			compatibilityVersion = "Xcode 3.2";
+			developmentRegion = English;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+			);
+			mainGroup = A02AAEAA160E6CA6002856CD;
+			projectDirPath = "";
+			projectReferences = (
+				{
+					ProductGroup = A02AAECC160E7324002856CD /* Products */;
+					ProjectRef = A02AAECB160E7324002856CD /* bindletools.xcodeproj */;
+				},
+			);
+			projectRoot = "";
+			targets = (
+			);
+		};
+/* End PBXProject section */
+
+/* Begin XCBuildConfiguration section */
+		A02AAEB1160E6CA6002856CD /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+			};
+			name = Debug;
+		};
+		A02AAEB2160E6CA6002856CD /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		A02AAEAF160E6CA6002856CD /* Build configuration list for PBXProject "pipedump" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				A02AAEB1160E6CA6002856CD /* Debug */,
+				A02AAEB2160E6CA6002856CD /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = A02AAEAC160E6CA6002856CD /* Project object */;
+}

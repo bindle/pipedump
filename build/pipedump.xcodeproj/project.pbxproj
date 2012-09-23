@@ -10,7 +10,7 @@
 		A02AAEFF160EE2C2002856CD /* pipedump.h in Headers */ = {isa = PBXBuildFile; fileRef = A02AAEFD160ED26C002856CD /* pipedump.h */; settings = {ATTRIBUTES = (); }; };
 		A02AAF03160EE3A8002856CD /* libpipedump.c in Sources */ = {isa = PBXBuildFile; fileRef = A02AAF00160EE3A8002856CD /* libpipedump.c */; };
 		A02AAF04160EE3A8002856CD /* libpipedump.h in Headers */ = {isa = PBXBuildFile; fileRef = A02AAF01160EE3A8002856CD /* libpipedump.h */; };
-		A02AAF09160EF7C4002856CD /* pipedump-main.c in Sources */ = {isa = PBXBuildFile; fileRef = A02AAF05160EF7B5002856CD /* pipedump-main.c */; };
+		A02AAF09160EF7C4002856CD /* pipedump.c in Sources */ = {isa = PBXBuildFile; fileRef = A02AAF05160EF7B5002856CD /* pipedump.c */; };
 		A02AAF1F160F1FD6002856CD /* liblibpipedump.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = A02AAEF7160E9BE9002856CD /* liblibpipedump.dylib */; };
 /* End PBXBuildFile section */
 
@@ -52,7 +52,7 @@
 		A02AAF00160EE3A8002856CD /* libpipedump.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = libpipedump.c; sourceTree = "<group>"; };
 		A02AAF01160EE3A8002856CD /* libpipedump.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = libpipedump.h; sourceTree = "<group>"; };
 		A02AAF02160EE3A8002856CD /* libpipedump.sym */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = libpipedump.sym; sourceTree = "<group>"; };
-		A02AAF05160EF7B5002856CD /* pipedump-main.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = "pipedump-main.c"; sourceTree = "<group>"; };
+		A02AAF05160EF7B5002856CD /* pipedump.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = pipedump.c; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -119,7 +119,7 @@
 		A02AAEC8160E72BA002856CD /* src */ = {
 			isa = PBXGroup;
 			children = (
-				A02AAF05160EF7B5002856CD /* pipedump-main.c */,
+				A02AAF05160EF7B5002856CD /* pipedump.c */,
 			);
 			name = src;
 			path = ../src;
@@ -255,7 +255,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				A02AAF09160EF7C4002856CD /* pipedump-main.c in Sources */,
+				A02AAF09160EF7C4002856CD /* pipedump.c in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

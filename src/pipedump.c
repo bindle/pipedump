@@ -49,6 +49,7 @@
 
 #include <pipedump.h>
 #include <inttypes.h>
+#include <unistd.h>
 #include <stdio.h>
 #include <getopt.h>
 #include <poll.h>

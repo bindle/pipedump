@@ -274,7 +274,7 @@ int main(int argc, char * argv[])
          while((len = read(STDIN_FILENO, buff, 4096)) > 0)
          {
             if ((cnf.verbosity))
-               fprintf(stderr, "%s: logging %li bytes for STDIN\n", PROGRAM_NAME, len);
+               fprintf(stderr, "%s: logging %i bytes for STDIN\n", PROGRAM_NAME, (int)len);
             pipedump_log(&cnf, buff, len, 0);
          };
       };
@@ -285,7 +285,7 @@ int main(int argc, char * argv[])
          while((len = read(cnf.pollfd[1].fd, buff, 4096)) > 0)
          {
             if ((cnf.verbosity))
-               fprintf(stderr, "%s: logging %li bytes for STDOUT\n", PROGRAM_NAME, len);
+               fprintf(stderr, "%s: logging %i bytes for STDOUT\n", PROGRAM_NAME, (int)len);
             pipedump_log(&cnf, buff, len, 1);
          };
       };
@@ -296,7 +296,7 @@ int main(int argc, char * argv[])
          while((len = read(cnf.pollfd[2].fd, buff, 4096)) > 0)
          {
             if ((cnf.verbosity))
-               fprintf(stderr, "%s: logging %li bytes for STDERR\n", PROGRAM_NAME, len);
+               fprintf(stderr, "%s: logging %i bytes for STDERR\n", PROGRAM_NAME, (int)len);
             pipedump_log(&cnf, buff, len, 2);
          };
       };

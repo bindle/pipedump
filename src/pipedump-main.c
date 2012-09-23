@@ -343,6 +343,7 @@ int pipedump_log(pdconfig_t * cnf, const uint8_t * buff, size_t len, int source)
    uint32_t       lsb;
    uint32_t       pcap_len;
    uint32_t       udp_len;
+   uint32_t       port;
 
    struct
    {
@@ -358,7 +359,9 @@ int pipedump_log(pdconfig_t * cnf, const uint8_t * buff, size_t len, int source)
    // determines lengths
    udp_len  = (uint32_t) len + 8;      // data + UDP header
    pcap_len = udp_len + 40;  // UDP length + IPv6 header
-   
+
+   // calculate port
+   port = cnf->start_port + source;
 
    // computes pcap header
    pcap_header.ts_sec   = (uint32_t) tp.tv_sec;
@@ -387,8 +390,10 @@ int pipedump_log(pdconfig_t * cnf, const uint8_t * buff, size_t len, int source)
    udp_header[34] = (udp_len >> 8) & 0xFF;    // Payload Length (byte 3)
    udp_header[35] = (udp_len >> 0) & 0xFF;    // Payload Length (byte 4)
    udp_header[39] = 17;                       // Next Header
-   udp_header[41] = source;                   // Source Port
-   udp_header[43] = source;                   // Destination Port
+   udp_header[40] = (port >> 8) & 0xFF;       // Source Port (byte 0)
+   udp_header[41] = (port >> 0) & 0xFF;       // Source Port (byte 1)
+   udp_header[42] = (port >> 8) & 0xFF;       // Destination Port (byte 0)
+   udp_header[43] = (port >> 0) & 0xFF;       // Destination Port (byte 1)
    udp_header[44] = (udp_len >> 8) & 0xFF;    // Length (byte 0)
    udp_header[45] = (udp_len >> 0) & 0xFF;    // Length (byte 1)
 

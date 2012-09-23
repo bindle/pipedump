@@ -139,6 +139,9 @@ pipedump_t * pd_open(const char *file, char *const argv[])
    pipedump_t * pd;
    int          pipes[6];
    int          pos;
+   char      ** targv;
+   int          argc;
+   int          eol;
 
    assert((file != NULL) && "pd_open() must provide a valid pointer for *file");
    assert((argv != NULL) && "pd_open() must provide a valid pointer for *argv[]");
@@ -211,7 +214,23 @@ pipedump_t * pd_open(const char *file, char *const argv[])
       close(pipes[1]);
       close(pipes[2]);
       close(pipes[4]);
-      if ((execvp(file, argv)))
+      for(argc = 0; argv[argc]; argc++);
+      if ((targv = calloc(sizeof(char *), argc)) == NULL)
+      {
+         fprintf(stderr, "out of virtual memory\n");
+         exit(1);
+      };
+      for(pos = 0; pos < argc; pos++)
+      {
+         if ((argv[pos][0] == '"') || (argv[pos][0] == '\''))
+            targv[pos] = strdup(&argv[pos][1]);
+         else
+            targv[pos] = strdup(&argv[pos][0]);
+         eol = (int)strlen(targv[pos]);
+         if ((targv[pos][eol-1] == '"') || (targv[pos][eol-1] == '\''))
+            targv[pos][eol-1] = '\0';
+      };
+      if ((execvp(file, targv)))
          perror("execvp()");
       pd_close(&pd);
       exit(0);

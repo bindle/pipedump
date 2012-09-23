@@ -441,7 +441,7 @@ int pipedump_log(pdconfig_t * cnf, const uint8_t * buff, size_t len, int source)
    switch(source)
    {
       case 0:
-      write(cnf->pollfd[0].fd, buff, len);
+      write(cnf->pd_in, buff, len);
       break;
 
       case 1:

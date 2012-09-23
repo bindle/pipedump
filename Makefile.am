@@ -84,8 +84,7 @@ src_pipedump_DEPENDENCIES		= $(lib_LTLIBRARIES) Makefile
 src_pipedump_CPPFLAGS			= -DPROGRAM_NAME="\"pipedump\"" $(AM_CPPFLAGS)
 src_pipedump_LDADD			= $(AM_LDADD) lib/libpipedump.la
 src_pipedump_SOURCES			= $(noinst_HEADERS) \
-					  src/pipedump-main.c \
-					  src/pipedump-main.h
+					  src/pipedump-main.c
 
 
 # substitution routine

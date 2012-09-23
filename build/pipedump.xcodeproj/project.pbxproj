@@ -6,6 +6,12 @@
 	objectVersion = 46;
 	objects = {
 
+/* Begin PBXBuildFile section */
+		A02AAEFF160EE2C2002856CD /* pipedump.h in Headers */ = {isa = PBXBuildFile; fileRef = A02AAEFD160ED26C002856CD /* pipedump.h */; settings = {ATTRIBUTES = (); }; };
+		A02AAF03160EE3A8002856CD /* libpipedump.c in Sources */ = {isa = PBXBuildFile; fileRef = A02AAF00160EE3A8002856CD /* libpipedump.c */; };
+		A02AAF04160EE3A8002856CD /* libpipedump.h in Headers */ = {isa = PBXBuildFile; fileRef = A02AAF01160EE3A8002856CD /* libpipedump.h */; };
+/* End PBXBuildFile section */
+
 /* Begin PBXCopyFilesBuildPhase section */
 		A02AAEE7160E9BD0002856CD /* CopyFiles */ = {
 			isa = PBXCopyFilesBuildPhase;
@@ -31,6 +37,9 @@
 		A02AAEF7160E9BE9002856CD /* liblibpipedump.dylib */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.dylib"; includeInIndex = 0; path = liblibpipedump.dylib; sourceTree = BUILT_PRODUCTS_DIR; };
 		A02AAEFC160E9DF2002856CD /* pipedump.1 */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.man; path = pipedump.1; sourceTree = "<group>"; };
 		A02AAEFD160ED26C002856CD /* pipedump.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = pipedump.h; sourceTree = "<group>"; };
+		A02AAF00160EE3A8002856CD /* libpipedump.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = libpipedump.c; sourceTree = "<group>"; };
+		A02AAF01160EE3A8002856CD /* libpipedump.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = libpipedump.h; sourceTree = "<group>"; };
+		A02AAF02160EE3A8002856CD /* libpipedump.sym */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = libpipedump.sym; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -85,6 +94,9 @@
 		A02AAEC4160E72BA002856CD /* lib */ = {
 			isa = PBXGroup;
 			children = (
+				A02AAF00160EE3A8002856CD /* libpipedump.c */,
+				A02AAF01160EE3A8002856CD /* libpipedump.h */,
+				A02AAF02160EE3A8002856CD /* libpipedump.sym */,
 			);
 			name = lib;
 			path = ../lib;
@@ -148,6 +160,8 @@
 			isa = PBXHeadersBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				A02AAEFF160EE2C2002856CD /* pipedump.h in Headers */,
+				A02AAF04160EE3A8002856CD /* libpipedump.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -232,6 +246,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				A02AAF03160EE3A8002856CD /* libpipedump.c in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

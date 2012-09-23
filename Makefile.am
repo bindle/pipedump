@@ -55,8 +55,8 @@ DEFS					=
 # automake targets
 check_PROGRAMS				=
 doc_DATA				=
-include_HEADERS				=
-lib_LTLIBRARIES				=
+include_HEADERS				= include/pipedump.h
+lib_LTLIBRARIES				= lib/libpipedump.la
 man_MANS				= doc/pipedump.1
 info_TEXINFOS				=
 noinst_LTLIBRARIES			=
@@ -65,6 +65,18 @@ noinst_PROGRAMS				=
 bin_PROGRAMS				=
 bin_SCRIPTS				=
 sbin_SCRIPTS				=
+
+
+# macros for lib/libotadm.la
+lib_libpipedump_la_DEPENDENCIES		= Makefile lib/libpipedump.sym
+lib_libpipedump_la_CFLAGS		= $(AM_CFLAGS)
+lib_libpipedump_la_LIBADD		= $(AM_LIBS)
+lib_libpipedump_la_LDFLAGS		= -rpath '$(libdir)' \
+					  -version-info $(LIB_VERSION_INFO) \
+					  $(AM_LDFLAGS)
+					  -export-symbols $(srcdir)/lib/libpipedump.sym
+lib_libpipedump_la_SOURCES		= lib/libpipedump.c \
+					  lib/libpipedump.h
 
 
 # substitution routine
@@ -108,9 +120,13 @@ XFAIL_TESTS				=
 EXTRA_MANS				=
 EXTRA_DIST				= include/git-package-version.txt \
 					  include/git-package-version.h \
+					  contrib/bindletools/COPYING \
+					  contrib/bindletools/README \
 					  contrib/bindletools/build-aux/autogen.sh \
 					  contrib/bindletools/build-aux/git-package-version.sh \
-					  contrib/bindletools/m4/bindle.m4
+					  contrib/bindletools/m4/bindle.m4 \
+					  doc/pipedump.1 \
+					  lib/libpipedump.sym
 CLEANFILES				= \
 					  $(builddir)/a.out   $(srcdir)/a.out \
 					  $(builddir)/*/a.out $(srcdir)/*/a.out \

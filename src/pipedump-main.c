@@ -341,6 +341,8 @@ int pipedump_log(pdconfig_t * cnf, const uint8_t * buff, size_t len, int source)
    uint8_t        udp_header[48];
    uint32_t       msb;
    uint32_t       lsb;
+   uint32_t       pcap_len;
+   uint32_t       udp_len;
 
    struct
    {
@@ -353,17 +355,22 @@ int pipedump_log(pdconfig_t * cnf, const uint8_t * buff, size_t len, int source)
    // grabs timestamp
    gettimeofday(&tp, NULL);
 
+   // determines lengths
+   udp_len  = (uint32_t) len + 8;      // data + UDP header
+   pcap_len = udp_len + 40;  // UDP length + IPv6 header
+   
+
    // computes pcap header
    pcap_header.ts_sec   = (uint32_t) tp.tv_sec;
    pcap_header.ts_usec  = (uint32_t) tp.tv_usec;
-   pcap_header.incl_len = (uint32_t) (len + 40 + 48); // data + IPv6 header + UDP header
-   pcap_header.orig_len = pcap_header.incl_len;
+   pcap_header.incl_len = (uint32_t) pcap_len;
+   pcap_header.orig_len = (uint32_t) pcap_len;
 
    // computes IPv6 header
    memset(ipv6_header, 0, 40);
    ipv6_header[0] = 0x60;                     // version
-   ipv6_header[4] = ((len + 48) >> 8) & 0xFF; // Payload Length (byte 0)
-   ipv6_header[5] = ((len + 48) >> 0) & 0xFF; // Payload Length (byte 1)
+   ipv6_header[4] = (udp_len >> 8) & 0xFF;    // Payload Length (byte 0)
+   ipv6_header[5] = (udp_len >> 0) & 0xFF;    // Payload Length (byte 1)
    ipv6_header[6] = 17;                       // Next Header
    ipv6_header[7] = 7;                        // Hop Limit
    if (source == 0)
@@ -377,13 +384,13 @@ int pipedump_log(pdconfig_t * cnf, const uint8_t * buff, size_t len, int source)
       udp_header[15] = 1;                     // Source Address
    else
       udp_header[31] = 1;                     // Destination Address
-   udp_header[34] = ((len + 48) >> 8) & 0xFF; // Payload Length (byte 3)
-   udp_header[35] = ((len + 48) >> 0) & 0xFF; // Payload Length (byte 4)
+   udp_header[34] = (udp_len >> 8) & 0xFF;    // Payload Length (byte 3)
+   udp_header[35] = (udp_len >> 0) & 0xFF;    // Payload Length (byte 4)
    udp_header[39] = 17;                       // Next Header
    udp_header[41] = source;                   // Source Port
    udp_header[43] = source;                   // Destination Port
-   udp_header[44] = ((len + 48) >> 8) & 0xFF; // Length (byte 0)
-   udp_header[45] = ((len + 48) >> 0) & 0xFF; // Length (byte 1)
+   udp_header[44] = (udp_len >> 8) & 0xFF;    // Length (byte 0)
+   udp_header[45] = (udp_len >> 0) & 0xFF;    // Length (byte 1)
 
    // computes checksum
    msb = 0;
@@ -410,13 +417,13 @@ int pipedump_log(pdconfig_t * cnf, const uint8_t * buff, size_t len, int source)
       msb = 0xFF;
       lsb = 0xFF;
    };
-   udp_header[18] = msb;
-   udp_header[19] = lsb;
+   udp_header[46] = msb;
+   udp_header[47] = lsb;
 
    // writes data
    write(cnf->fd, &pcap_header, sizeof(pcap_header));
    write(cnf->fd, ipv6_header, 40);
-   write(cnf->fd, udp_header, 48);
+   write(cnf->fd, &udp_header[40], 8);
    write(cnf->fd, buff, len);
 
    // proxy data
@@ -471,7 +478,7 @@ int pipedump_logopen(pdconfig_t * cnf)
    write(cnf->fd, &uvar, sizeof(uvar));
 
    // print header (version_major/version_minor)
-   uvar = (2 << 16) & (4 << 0);
+   uvar = 0x00020004;
    write(cnf->fd, &uvar, sizeof(uvar));
 
    // print header (thiszone)

@@ -41,6 +41,8 @@ AC_REVISION(0.0)
 AC_INIT([Pipe Dump Utility & Library],[0.0],[syzdek@bindlebinaries.com],[pipedump])
 
 AC_SUBST([RELEASE_MONTH],["September 2012"])
+AC_SUBST([PACKAGE_COPYRIGHT], ["Copyright (c) 2012 Bindle Binaries <syzdek@bindlebinaries.com>."])
+AC_DEFINE_UNQUOTED(PACKAGE_COPYRIGHT, ["$PACKAGE_COPYRIGHT"], ["Copyright info"])
 
 # Version Info:
 #    Current    -- the current version number of this API

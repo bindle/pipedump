@@ -62,7 +62,7 @@ info_TEXINFOS				=
 noinst_LTLIBRARIES			=
 noinst_HEADERS				=
 noinst_PROGRAMS				=
-bin_PROGRAMS				=
+bin_PROGRAMS				= src/pipedump
 bin_SCRIPTS				=
 sbin_SCRIPTS				=
 
@@ -77,6 +77,15 @@ lib_libpipedump_la_LDFLAGS		= -rpath '$(libdir)' \
 					  -export-symbols $(srcdir)/lib/libpipedump.sym
 lib_libpipedump_la_SOURCES		= lib/libpipedump.c \
 					  lib/libpipedump.h
+
+
+# macros for src/pipedump
+src_pipedump_DEPENDENCIES		= $(lib_LTLIBRARIES) Makefile
+src_pipedump_CPPFLAGS			= -DPROGRAM_NAME="\"pipedump\"" $(AM_CPPFLAGS)
+src_pipedump_LDADD			= $(AM_LDADD) lib/libpipedump.la
+src_pipedump_SOURCES			= $(noinst_HEADERS) \
+					  src/pipedump-main.c \
+					  src/pipedump-main.h
 
 
 # substitution routine

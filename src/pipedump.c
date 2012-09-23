@@ -243,6 +243,10 @@ int main(int argc, char * argv[])
    if (pipedump_logopen(&cnf) == -1)
       return(1);
 
+   // logs command to be executed
+   for(pos = 0; pargv[pos]; pos++)
+      pipedump_log(&cnf, (uint8_t *)pargv[pos], strlen(pargv[pos]), 3);
+
    // executes command
    if ((cnf.verbosity))
       fprintf(stderr, "%s: executing \"%s\"...\n", PROGRAM_NAME, pargv[0]);

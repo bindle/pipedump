@@ -38,7 +38,7 @@
 
 # Sub directories
 SUBDIRS					=
-DIST_SUBDIRS				= contrib/bindletools
+DIST_SUBDIRS				=
 
 # Global flags
 AM_LIBS					=
@@ -47,7 +47,7 @@ AM_CFLAGS				= -O2 $(CFLAGS_WARNINGS)
 AM_CXXFLAGS				= -O2 @AM_CXXFLAGS@
 AM_OBJCFLAGS				= -O2 @AM_OBJCFLAGS@
 AM_CPPFLAGS				= -O2 -UPMARK -DHAVE_CONFIG_H=1 -I$(top_builddir)/include -I$(top_srcdir)/include -DSYSCONFDIR="\"$(sysconfdir)\""
-ACLOCAL_AMFLAGS				= -I m4 -W all -W error
+ACLOCAL_AMFLAGS				= -I m4 -I contrib/bindletools/m4 -W all -W error
 AM_MAKEINFOFLAGS                        = --no-split
 DEFS					=
 
@@ -106,7 +106,11 @@ BUILT_SOURCES				=
 TESTS					=
 XFAIL_TESTS				=
 EXTRA_MANS				=
-EXTRA_DIST				= build-aux/git-package-version
+EXTRA_DIST				= include/git-package-version.txt \
+					  include/git-package-version.h \
+					  contrib/bindletools/build-aux/autogen.sh \
+					  contrib/bindletools/build-aux/git-package-version.sh \
+					  contrib/bindletools/m4/bindle.m4
 CLEANFILES				= \
 					  $(builddir)/a.out   $(srcdir)/a.out \
 					  $(builddir)/*/a.out $(srcdir)/*/a.out \
@@ -122,8 +126,8 @@ DISTCHECK_CONFIGURE_FLAGS		= --enable-strictwarnings
 # custom targets
 .PHONY: autoreconf update gitclean build-aux/git-package-version
 
-build-aux/git-package-version:
-	$(top_srcdir)/contrib/bindletools/build-aux/git-package-version.sh auto
+build-aux/git-package-version.txt:
+	$(top_srcdir)/contrib/bindletools/build-aux/git-package-version.sh $(top_srcdir)
 
 autoreconf:
 	autoreconf -i -f $(ACLOCAL_AMFLAGS) $(top_srcdir)
@@ -144,7 +148,7 @@ gitclean:
 	rm -f  $(top_srcdir)/build-aux/c* $(top_srcdir)/build-aux/d*
 	rm -f  $(top_srcdir)/build-aux/i* $(top_srcdir)/build-aux/l*
 	rm -f  $(top_srcdir)/build-aux/m*
-	rm -f  $(top_srcdir)/build-aux/git-package-version
+	rm -f  $(top_srcdir)/include/git-package-version*
 
 
 # local targets

@@ -38,9 +38,9 @@ AC_PREREQ([2.65])
 
 AC_COPYRIGHT([Copyright (c) 2012 Bindle Binaries <syzdek@bindlebinaries.com>.])
 AC_REVISION(0.0)
-AC_INIT([Pipe Dump Utility & Library],[0.0],[syzdek@bindlebinaries.com],[piepdump])
+AC_INIT([Pipe Dump Utility & Library],[0.0],[syzdek@bindlebinaries.com],[pipedump])
 
-AC_SUBST([RELEASE_MONTH],["April 2011"])
+AC_SUBST([RELEASE_MONTH],["September 2012"])
 
 # Version Info:
 #    Current    -- the current version number of this API
@@ -103,7 +103,7 @@ AC_BINDLE_ENABLE_WARNINGS
 AC_CHECK_HEADERS([getopt.h], [AC_DEFINE_UNQUOTED(USE_GETOPT_LONG, 1, [Use GNU getopt_long])])
 
 # determine PACKAGE_VERSION via Git
-AC_BINDLE_GIT_PACKAGE_VERSION
+AC_BINDLE_GIT_PACKAGE_VERSION([contrib/bindletools/build-aux/git-package-version.sh])
 
 # Creates outputs
 AC_CONFIG_FILES([Makefile])

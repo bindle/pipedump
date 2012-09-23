@@ -51,6 +51,7 @@
 #      libtool --mode=clean rm -f libpipedump.la libpipedump.lo
 #
 pd_close
+pd_close_fd
 pd_get_option
 pd_open
 pd_version

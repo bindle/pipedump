@@ -11,7 +11,18 @@
 		A02AAF03160EE3A8002856CD /* libpipedump.c in Sources */ = {isa = PBXBuildFile; fileRef = A02AAF00160EE3A8002856CD /* libpipedump.c */; };
 		A02AAF04160EE3A8002856CD /* libpipedump.h in Headers */ = {isa = PBXBuildFile; fileRef = A02AAF01160EE3A8002856CD /* libpipedump.h */; };
 		A02AAF09160EF7C4002856CD /* pipedump-main.c in Sources */ = {isa = PBXBuildFile; fileRef = A02AAF05160EF7B5002856CD /* pipedump-main.c */; };
+		A02AAF1F160F1FD6002856CD /* liblibpipedump.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = A02AAEF7160E9BE9002856CD /* liblibpipedump.dylib */; };
 /* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		A02AAF1D160F1FCE002856CD /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = A02AAEAC160E6CA6002856CD /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = A02AAEF6160E9BE9002856CD;
+			remoteInfo = libpipedump;
+		};
+/* End PBXContainerItemProxy section */
 
 /* Begin PBXCopyFilesBuildPhase section */
 		A02AAEE7160E9BD0002856CD /* CopyFiles */ = {
@@ -49,6 +60,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				A02AAF1F160F1FD6002856CD /* liblibpipedump.dylib in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -182,6 +194,7 @@
 			buildRules = (
 			);
 			dependencies = (
+				A02AAF1E160F1FCE002856CD /* PBXTargetDependency */,
 			);
 			name = pipedump;
 			productName = pipedump;
@@ -256,6 +269,14 @@
 		};
 /* End PBXSourcesBuildPhase section */
 
+/* Begin PBXTargetDependency section */
+		A02AAF1E160F1FCE002856CD /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = A02AAEF6160E9BE9002856CD /* libpipedump */;
+			targetProxy = A02AAF1D160F1FCE002856CD /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
 /* Begin XCBuildConfiguration section */
 		A02AAEB1160E6CA6002856CD /* Debug */ = {
 			isa = XCBuildConfiguration;
@@ -280,7 +301,6 @@
 		A02AAEF1160E9BD0002856CD /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				ALWAYS_SEARCH_USER_PATHS = NO;
 				ARCHS = "$(ARCHS_STANDARD_64_BIT)";
 				CLANG_CXX_LANGUAGE_STANDARD = "gnu++0x";
 				CLANG_CXX_LIBRARY = "libc++";
@@ -310,7 +330,6 @@
 		A02AAEF2160E9BD0002856CD /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				ALWAYS_SEARCH_USER_PATHS = NO;
 				ARCHS = "$(ARCHS_STANDARD_64_BIT)";
 				CLANG_CXX_LANGUAGE_STANDARD = "gnu++0x";
 				CLANG_CXX_LIBRARY = "libc++";

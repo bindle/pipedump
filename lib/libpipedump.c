@@ -77,6 +77,35 @@ void pd_close(pipedump_t ** pdp)
 }
 
 
+void pd_close_fd(pipedump_t * pd, int option)
+{
+   switch(option)
+   {
+      case PIPEDUMP_STDERR:
+      if (pd->pipeerr != -1)
+         close(pd->pipeerr);
+      pd->pipeerr = -1;
+      break;
+
+      case PIPEDUMP_STDIN:
+      if (pd->pipein != -1)
+         close(pd->pipein);
+      pd->pipein = -1;
+      break;
+
+      case PIPEDUMP_STDOUT:
+      if (pd->pipeout != -1)
+         close(pd->pipeout);
+      pd->pipeout = -1;
+      break;
+
+      default:
+      break;
+   };
+   return;
+}
+
+
 int pd_get_option(pipedump_t * pd, int option, void * outvalue)
 {
    assert((pd != NULL) && "pd_get_option() cannot accept a NULL value");

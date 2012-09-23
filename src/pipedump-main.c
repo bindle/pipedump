@@ -47,9 +47,11 @@
 #include <config.h>
 #endif
 
+#include <pipedump.h>
 #include <inttypes.h>
 #include <stdio.h>
 #include <getopt.h>
+#include <poll.h>
 #include <fcntl.h>
 #include <string.h>
 #include <stdlib.h>
@@ -109,11 +111,15 @@
 typedef struct pipedump_config pdconfig_t;
 struct pipedump_config
 {
-   int          fd;
-   int          quiet;
-   int          verbosity;
-   int          start_port;
-   const char * logfile;
+   pipedump_t    * pd;
+   int             pd_in;
+   int             fd;
+   pid_t           pid;
+   struct pollfd   pollfd[3];
+   int             quiet;
+   int             verbosity;
+   int             start_port;
+   const char    * logfile;
 };
 
 
@@ -152,6 +158,10 @@ int main(int argc, char * argv[])
    int           c;
    int           opt_index;
    char       ** pargv;
+   int           pos;
+   int           ret;
+   uint8_t       buff[4096];
+   ssize_t       len;
    pdconfig_t    cnf;
 
    // getopt options
@@ -165,6 +175,10 @@ int main(int argc, char * argv[])
       {"version",       no_argument, 0, 'V'},
       {NULL,            0,           0, 0  }
    };
+
+   // sets default values
+   memset(&cnf, 0, sizeof(cnf));
+   cnf.start_port = 19840;
 
    // loops through arguments
    while((c = getopt_long(argc, argv, short_opt, long_opt, &opt_index)) != -1)
@@ -227,7 +241,91 @@ int main(int argc, char * argv[])
    if (pipedump_logopen(&cnf) == -1)
       return(1);
 
+   // executes command
+   if ((cnf.verbosity))
+      fprintf(stderr, "%s: executing \"%s\"...\n", PROGRAM_NAME, pargv[0]);
+   if ((cnf.pd = pd_open(pargv[0], pargv)) == NULL)
+   {
+      perror("pd_open()");
+      pipedump_logclose(&cnf);
+      return(1);
+   };
+
+   // setups polling info
+   if ((cnf.verbosity))
+      fprintf(stderr, "%s: saving pipes...\n", PROGRAM_NAME);
+   cnf.pollfd[0].fd = STDIN_FILENO;
+   pd_get_option(cnf.pd, PIPEDUMP_STDIN,  &cnf.pd_in);
+   pd_get_option(cnf.pd, PIPEDUMP_STDOUT, &cnf.pollfd[1].fd);
+   pd_get_option(cnf.pd, PIPEDUMP_STDERR, &cnf.pollfd[2].fd);
+   pd_get_option(cnf.pd, PIPEDUMP_PID,    &cnf.pid);
+   for(pos = 0; pos < 3; pos++)
+      cnf.pollfd[pos].events = POLLIN | POLLPRI | POLLERR | POLLHUP | POLLRDBAND;
+
+   // loops until exit or error
+   if ((cnf.verbosity))
+      fprintf(stderr, "%s: entering run loop...\n", PROGRAM_NAME);
+   while ((ret = poll(cnf.pollfd, 3, -1)) > 0)
+   {
+      // checks STDIN for data
+      if (cnf.pollfd[0].revents & (POLLPRI|POLLIN))
+      {
+         while((len = read(STDIN_FILENO, buff, 4096)) > 0)
+         {
+            if ((cnf.verbosity))
+               fprintf(stderr, "%s: logging %li bytes for STDIN\n", PROGRAM_NAME, len);
+            pipedump_log(&cnf, buff, len, 0);
+         };
+      };
+
+      // checks PIPEOUT for data
+      if (cnf.pollfd[1].revents & (POLLPRI|POLLIN))
+      {
+         while((len = read(cnf.pollfd[1].fd, buff, 4096)) > 0)
+         {
+            if ((cnf.verbosity))
+               fprintf(stderr, "%s: logging %li bytes for STDOUT\n", PROGRAM_NAME, len);
+            pipedump_log(&cnf, buff, len, 1);
+         };
+      };
+
+      // checks PIPEERR for data
+      if (cnf.pollfd[2].revents & (POLLPRI|POLLIN))
+      {
+         while((len = read(cnf.pollfd[2].fd, buff, 4096)) > 0)
+         {
+            if ((cnf.verbosity))
+               fprintf(stderr, "%s: logging %li bytes for STDERR\n", PROGRAM_NAME, len);
+            pipedump_log(&cnf, buff, len, 2);
+         };
+      };
+
+      // close pipe if STDIN is closed
+      if (cnf.pollfd[0].revents & POLLHUP)
+      {
+         if ((cnf.verbosity))
+            fprintf(stderr, "%s: closing STDIN\n", PROGRAM_NAME);
+         pd_close_fd(cnf.pd, PIPEDUMP_STDIN);
+      };
+
+      // exits if any of the pipes close
+      if ( (cnf.pollfd[1].revents & POLLHUP) || (cnf.pollfd[2].revents & POLLHUP) )
+      {
+         if ((waitpid(cnf.pid, &ret, 0)) == -1)
+            perror("waitid()");
+         pd_close(&cnf.pd);
+         pipedump_logclose(&cnf);
+
+
+         // return with exit code of child
+         if ((cnf.verbosity))
+            fprintf(stderr, "%s: exiting with status %i\n", PROGRAM_NAME, WEXITSTATUS(ret));
+         return(WEXITSTATUS(ret));
+      };
+   };
+
    // closes files
+   pd_close(&cnf.pd);
    pipedump_logclose(&cnf);
 
    return(0);
@@ -321,6 +419,25 @@ int pipedump_log(pdconfig_t * cnf, const uint8_t * buff, size_t len, int source)
    write(cnf->fd, udp_header, 48);
    write(cnf->fd, buff, len);
 
+   // proxy data
+   switch(source)
+   {
+      case 0:
+      write(cnf->pollfd[0].fd, buff, len);
+      break;
+
+      case 1:
+      write(STDOUT_FILENO, buff, len);
+      break;
+
+      case 2:
+      write(STDERR_FILENO, buff, len);
+      break;
+
+      default:
+      break;
+   };
+
    return(0);
 }
 
@@ -359,7 +476,7 @@ int pipedump_logopen(pdconfig_t * cnf)
 
    // print header (thiszone)
    var = 0;
-   write(cnf->fd, &uvar, sizeof(var));
+   write(cnf->fd, &var, sizeof(var));
 
    // print header (sigfigs)
    uvar = 0;

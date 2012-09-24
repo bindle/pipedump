@@ -60,6 +60,9 @@
 //             //
 /////////////////
 
+#ifdef PMARK
+#pragma mark - Pipe management
+#endif
 
 void pd_free(pipedump_t ** pdp)
 {
@@ -261,6 +264,10 @@ pipedump_t * pd_init(const char *file, char *const argv[])
    return(NULL);
 }
 
+
+#ifdef PMARK
+#pragma mark - Library meta information
+#endif
 
 const char * pd_version(void)
 {

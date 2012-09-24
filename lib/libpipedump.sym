@@ -50,9 +50,9 @@
 #   Clean:
 #      libtool --mode=clean rm -f libpipedump.la libpipedump.lo
 #
-pd_close
+pd_free
 pd_close_fd
 pd_get_option
-pd_open
+pd_init
 pd_version
 # end of symbol export file

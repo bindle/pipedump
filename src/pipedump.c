@@ -268,7 +268,7 @@ int main(int argc, char * argv[])
    // executes command
    if ((cnf.verbosity))
       fprintf(stderr, "%s: executing \"%s\"...\n", PROGRAM_NAME, pargv[0]);
-   if ((cnf.pd = pd_open(pargv[0], pargv)) == NULL)
+   if ((cnf.pd = pd_init(pargv[0], pargv)) == NULL)
    {
       perror("pd_open()");
       pipedump_logclose(&cnf);
@@ -337,7 +337,7 @@ int main(int argc, char * argv[])
       {
          if ((waitpid(cnf.pid, &ret, 0)) == -1)
             perror("waitid()");
-         pd_close(&cnf.pd);
+         pd_free(&cnf.pd);
          pipedump_logclose(&cnf);
 
 
@@ -349,7 +349,7 @@ int main(int argc, char * argv[])
    };
 
    // closes files
-   pd_close(&cnf.pd);
+   pd_free(&cnf.pd);
    pipedump_logclose(&cnf);
 
    return(0);

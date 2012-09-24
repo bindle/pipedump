@@ -61,10 +61,10 @@
 /////////////////
 
 
-void pd_close(pipedump_t ** pdp)
+void pd_free(pipedump_t ** pdp)
 {
-   assert((pdp != NULL) && "pd_close() cannot accept a NULL value");
-   assert((*pdp != NULL) && "pd_close() accept a pointer referencing NULL");
+   assert((pdp != NULL) && "pd_free() cannot accept a NULL value");
+   assert((*pdp != NULL) && "pd_free() accept a pointer referencing NULL");
    if ((*pdp)->pipeerr != -1)
       close((*pdp)->pipeerr);
    if ((*pdp)->pipein != -1)
@@ -134,7 +134,7 @@ int pd_get_option(pipedump_t * pd, int option, void * outvalue)
 }
 
 
-pipedump_t * pd_open(const char *file, char *const argv[])
+pipedump_t * pd_init(const char *file, char *const argv[])
 {
    pipedump_t * pd;
    int          pipes[6];
@@ -239,7 +239,7 @@ pipedump_t * pd_open(const char *file, char *const argv[])
       // execute command
       if ((execvp(file, targv)))
          perror("execvp()");
-      pd_close(&pd);
+      pd_free(&pd);
       exit(0);
 
       //

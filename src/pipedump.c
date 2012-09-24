@@ -122,8 +122,6 @@ struct pipedump_config
    int             verbosity;
    int             start_port;
    const char    * logfile;
-   uint8_t         buff;
-   size_t          buff_len;
 };
 
 
@@ -169,7 +167,7 @@ int main(int argc, char * argv[])
    pdconfig_t    cnf;
 
    // getopt options
-   static char   short_opt[] = "b:ho:p:qvV";
+   static char   short_opt[] = "ho:p:qvV";
    static struct option long_opt[] =
    {
       {"help",          no_argument, 0, 'h'},
@@ -191,10 +189,6 @@ int main(int argc, char * argv[])
       {
          case -1:       // no more arguments
          case 0:        // long options toggles
-         break;
-
-         case 'b':
-         cnf.buff_len = (int)atol(optarg);
          break;
 
          case 'h':
@@ -244,13 +238,6 @@ int main(int argc, char * argv[])
       return(1);
    };
    pargv = &argv[optind];
-
-   // allocate buffer
-   if (!(cnf.buff_len))
-      cnf.buff_len = 4096;
-   if ((cnf.buff = malloc(cnf.buff_len)) == null)
-   {
-   };
 
    // open output log
    if (pipedump_logopen(&cnf) == -1)

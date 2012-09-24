@@ -208,9 +208,6 @@ pipedump_t * pd_open(const char *file, char *const argv[])
          free(pd);
          return(NULL);
       };
-      pd->pipein  = pipes[0];
-      pd->pipeout = pipes[3];
-      pd->pipeerr = pipes[5];
       close(pipes[1]);
       close(pipes[2]);
       close(pipes[4]);

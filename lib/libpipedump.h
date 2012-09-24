@@ -53,6 +53,8 @@
 #include <stdio.h>
 #include <inttypes.h>
 #include <sys/types.h>
+#include <sys/types.h>
+#include <netinet/in.h>
 
 
 ///////////////////
@@ -97,6 +99,10 @@ struct pipedump_state
    char  * file;
    char ** argv;
    pid_t   pid;
+
+   // logging local/remote address
+   struct in6_addr lo_addr;
+   struct in6_addr rm_addr;
 };
 
 

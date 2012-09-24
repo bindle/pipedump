@@ -408,6 +408,9 @@ pipedump_t * pd_init(const char *file, char *const argv[])
    pd->logfd      = -1;
    pd->pcap_sport = 19840;
 
+   // sets addresses
+   pd->lo_addr.s6_addr[15] = 1;
+
    // copies file to execute
    if ((pd->file = strdup(file)) == NULL)
    {

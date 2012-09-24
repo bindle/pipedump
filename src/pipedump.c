@@ -122,6 +122,8 @@ struct pipedump_config
    int             verbosity;
    int             start_port;
    const char    * logfile;
+   uint8_t       * buff;
+   size_t          buff_len;
 };
 
 
@@ -162,12 +164,11 @@ int main(int argc, char * argv[])
    char       ** pargv;
    int           pos;
    int           ret;
-   uint8_t       buff[4096];
    ssize_t       len;
    pdconfig_t    cnf;
 
    // getopt options
-   static char   short_opt[] = "ho:p:qvV";
+   static char   short_opt[] = "b:ho:p:qvV";
    static struct option long_opt[] =
    {
       {"help",          no_argument, 0, 'h'},
@@ -189,6 +190,10 @@ int main(int argc, char * argv[])
       {
          case -1:       // no more arguments
          case 0:        // long options toggles
+         break;
+
+         case 'b':
+         cnf.buff_len = atol(optarg);
          break;
 
          case 'h':
@@ -239,6 +244,17 @@ int main(int argc, char * argv[])
    };
    pargv = &argv[optind];
 
+   // allocates buffer
+   if (!(cnf.buff_len))
+      cnf.buff_len = 4096;
+   if ((cnf.verbosity))
+      fprintf(stderr, "%s: allocating %i byte buffer...\n", PROGRAM_NAME, (int)cnf.buff_len);
+   if ((cnf.buff = malloc(cnf.buff_len)) == NULL)
+   {
+      fprintf(stderr, "%s: out of virtual memory\n", PROGRAM_NAME);
+      return(1);
+   };
+
    // open output log
    if ((cnf.verbosity))
       fprintf(stderr, "%s: opening logfile \"%s\"...\n", PROGRAM_NAME, cnf.logfile);
@@ -278,33 +294,33 @@ int main(int argc, char * argv[])
       // checks STDIN for data
       if (cnf.pollfd[0].revents & (POLLPRI|POLLIN))
       {
-         while((len = read(STDIN_FILENO, buff, 4096)) > 0)
+         while((len = read(STDIN_FILENO, cnf.buff, cnf.buff_len)) > 0)
          {
             if ((cnf.verbosity))
                fprintf(stderr, "%s: logging %i bytes for STDIN\n", PROGRAM_NAME, (int)len);
-            pipedump_log(&cnf, buff, len, 0);
+            pipedump_log(&cnf, cnf.buff, len, 0);
          };
       };
 
       // checks PIPEOUT for data
       if (cnf.pollfd[1].revents & (POLLPRI|POLLIN))
       {
-         while((len = read(cnf.pollfd[1].fd, buff, 4096)) > 0)
+         while((len = read(cnf.pollfd[1].fd, cnf.buff, cnf.buff_len)) > 0)
          {
             if ((cnf.verbosity))
                fprintf(stderr, "%s: logging %i bytes for STDOUT\n", PROGRAM_NAME, (int)len);
-            pipedump_log(&cnf, buff, len, 1);
+            pipedump_log(&cnf, cnf.buff, len, 1);
          };
       };
 
       // checks PIPEERR for data
       if (cnf.pollfd[2].revents & (POLLPRI|POLLIN))
       {
-         while((len = read(cnf.pollfd[2].fd, buff, 4096)) > 0)
+         while((len = read(cnf.pollfd[2].fd, cnf.buff, cnf.buff_len)) > 0)
          {
             if ((cnf.verbosity))
                fprintf(stderr, "%s: logging %i bytes for STDERR\n", PROGRAM_NAME, (int)len);
-            pipedump_log(&cnf, buff, len, 2);
+            pipedump_log(&cnf, cnf.buff, len, 2);
          };
       };
 
@@ -522,6 +538,7 @@ void pipedump_usage(void)
    // line. The two strings referenced are: PROGRAM_NAME, and
    // PACKAGE_BUGREPORT
    printf(_("Usage: %s [OPTIONS] -- command\n"
+         "  -b length                 length in bytes of buffer to allocate(default 4096)\n"
          "  -h, --help                print this help and exit\n"
          "  -o file                   output file\n"
          "  -p port                   starting port number (default 19840)\n"

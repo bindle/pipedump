@@ -240,6 +240,8 @@ int main(int argc, char * argv[])
    pargv = &argv[optind];
 
    // open output log
+   if ((cnf.verbosity))
+      fprintf(stderr, "%s: opening logfile \"%s\"...\n", PROGRAM_NAME, cnf.logfile);
    if (pipedump_logopen(&cnf) == -1)
       return(1);
 

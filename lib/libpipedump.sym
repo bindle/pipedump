@@ -50,9 +50,18 @@
 #   Clean:
 #      libtool --mode=clean rm -f libpipedump.la libpipedump.lo
 #
-pd_free
+# Pipe I/O
 pd_close_fd
+pd_copy
+pd_read
+pd_write
+#
+# Pipe management
+pd_fildes
+pd_free
 pd_get_option
 pd_init
+#
+# Library meta information
 pd_version
 # end of symbol export file

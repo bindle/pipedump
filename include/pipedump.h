@@ -123,9 +123,9 @@
 
 
 // Pipe Dump Options
-#define PIPEDUMP_STDIN    1
-#define PIPEDUMP_STDOUT   2
-#define PIPEDUMP_STDERR   4
+#define PIPEDUMP_STDIN    -10
+#define PIPEDUMP_STDOUT   -11
+#define PIPEDUMP_STDERR   -12
 #define PIPEDUMP_PID      8
 
 
@@ -148,9 +148,18 @@ BEGIN_C_DECLS
 
 /// @name Pipe I/O
 PIPEDUMP_F(void) pd_close_fd(pipedump_t * pd, int fildes);
+PIPEDUMP_F(ssize_t) pd_copy(pipedump_t * pd, int f1, int f2, void * buf, size_t nbyte);
+PIPEDUMP_F(ssize_t) pd_read(pipedump_t * pd, int fildes, void * buf, size_t nbyte);
+PIPEDUMP_F(ssize_t) pd_write(pipedump_t * pd, int fildes, const void * buf, size_t nbyte);
+
+/// @name Pipe Logging
+PIPEDUMP_F(int) pd_openlog(pipedump_t * pd, const char * logfile, mode_t mode);
+PIPEDUMP_F(int) pd_closelog(pipedump_t * pd);
+PIPEDUMP_F(int) pd_log(pipedump_t * pd, const void * buff, size_t nbyte, int tag);
 
 /// @name Pipe management
-PIPEDUMP_F(void) pd_free(pipedump_t ** pd);
+PIPEDUMP_F(int) pd_fildes(pipedump_t * pd, int fildes);
+PIPEDUMP_F(void) pd_free(pipedump_t ** pdp);
 PIPEDUMP_F(int) pd_get_option(pipedump_t * pd, int option, void * outvalue);
 PIPEDUMP_F(pipedump_t *) pd_init(const char * file, char * const argv[]);
 

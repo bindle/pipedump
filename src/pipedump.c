@@ -278,11 +278,10 @@ int main(int argc, char * argv[])
    // setups polling info
    if ((cnf.verbosity))
       fprintf(stderr, "%s: saving pipes...\n", PROGRAM_NAME);
-   cnf.pollfd[0].fd = STDIN_FILENO;
-   pd_get_option(cnf.pd, PIPEDUMP_STDIN,  &cnf.pd_in);
-   pd_get_option(cnf.pd, PIPEDUMP_STDOUT, &cnf.pollfd[1].fd);
-   pd_get_option(cnf.pd, PIPEDUMP_STDERR, &cnf.pollfd[2].fd);
    pd_get_option(cnf.pd, PIPEDUMP_PID,    &cnf.pid);
+   cnf.pollfd[0].fd = STDIN_FILENO;
+   cnf.pollfd[1].fd = pd_fildes(cnf.pd, PIPEDUMP_STDOUT);
+   cnf.pollfd[2].fd = pd_fildes(cnf.pd, PIPEDUMP_STDERR);
    for(pos = 0; pos < 3; pos++)
       cnf.pollfd[pos].events = POLLIN | POLLPRI | POLLERR | POLLHUP | POLLRDBAND;
 
@@ -298,6 +297,7 @@ int main(int argc, char * argv[])
          {
             if ((cnf.verbosity))
                fprintf(stderr, "%s: logging %i bytes for STDIN\n", PROGRAM_NAME, (int)len);
+            pd_copy(cnf.pd, STDIN_FILENO, PIPEDUMP_STDIN, cnf.buff, len);
             pipedump_log(&cnf, cnf.buff, len, 0);
          };
       };
@@ -454,25 +454,6 @@ int pipedump_log(pdconfig_t * cnf, const uint8_t * buff, size_t len, int source)
    write(cnf->fd, ipv6_header, 40);
    write(cnf->fd, &udp_header[40], 8);
    write(cnf->fd, buff, len);
-
-   // proxy data
-   switch(source)
-   {
-      case 0:
-      write(cnf->pd_in, buff, len);
-      break;
-
-      case 1:
-      write(STDOUT_FILENO, buff, len);
-      break;
-
-      case 2:
-      write(STDERR_FILENO, buff, len);
-      break;
-
-      default:
-      break;
-   };
 
    return(0);
 }

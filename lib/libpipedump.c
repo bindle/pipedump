@@ -66,7 +66,7 @@
 
 void pd_close_fd(pipedump_t * pd, int fildes)
 {
-   switch(option)
+   switch(fildes)
    {
       case PIPEDUMP_STDERR:
       if (pd->pipeerr != -1)
@@ -93,6 +93,41 @@ void pd_close_fd(pipedump_t * pd, int fildes)
 }
 
 
+ssize_t pd_copy(pipedump_t * pd, int f1, int f2, void * buf, size_t nbyte)
+{
+   ssize_t len;
+   assert((pd != NULL)  && "pd must not be NULL");
+   assert((f1 != -1)    && "f1 must not be -1");
+   assert((f2 != -1)    && "r2 must not be -1");
+   assert((buf != NULL) && "buf must not be NULL");
+   assert((nbyte != 0)  && "nbyte must not be 0");
+   if ((len = pd_read(pd, f1, buf, nbyte)) == -1)
+      return(-1);
+   return(pd_write(pd, f2, buf, len));
+}
+
+
+ssize_t pd_read(pipedump_t * pd, int fildes, void * buf, size_t nbyte)
+{
+   assert((pd != NULL)   && "pd must not be NULL");
+   assert((fildes != -1) && "f1 must not be -1");
+   assert((buf != NULL)  && "buf must not be NULL");
+   assert((nbyte != 0)   && "nbyte must not be 0");
+   return(read(pd_fildes(pd, fildes), buf, nbyte));
+}
+
+
+ssize_t pd_write(pipedump_t * pd, int fildes, const void * buf, size_t nbyte)
+{
+   assert((pd != NULL)   && "pd must not be NULL");
+   assert((fildes != -1) && "f1 must not be -1");
+   assert((buf != NULL)  && "buf must not be NULL");
+   assert((nbyte != 0)   && "nbyte must not be 0");
+   return(write(pd_fildes(pd, fildes), buf, nbyte));
+}
+
+
+
 #ifdef PMARK
 #pragma mark - Pipe Logging
 #endif
@@ -100,6 +135,26 @@ void pd_close_fd(pipedump_t * pd, int fildes)
 #ifdef PMARK
 #pragma mark - Pipe management
 #endif
+
+int pd_fildes(pipedump_t * pd, int fildes)
+{
+   switch(fildes)
+   {
+      case PIPEDUMP_STDERR:
+      return(pd->pipeerr);
+
+      case PIPEDUMP_STDIN:
+      return(pd->pipein);
+
+      case PIPEDUMP_STDOUT:
+      return(pd->pipeout);
+
+      default:
+      break;
+   };
+   return(fildes);
+}
+
 
 void pd_free(pipedump_t ** pdp)
 {

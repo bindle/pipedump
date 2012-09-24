@@ -295,6 +295,8 @@ int pd_openlog(pipedump_t * pd, const char * logfile, mode_t mode)
    uvar = 101;
    write(fd, &uvar, sizeof(uvar));
 
+   pd->logfd = fd;
+
    return(0);
 }
 

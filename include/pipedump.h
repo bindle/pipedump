@@ -147,10 +147,10 @@ typedef struct pipedump_state pipedump_t;
 BEGIN_C_DECLS
 
 /// @name Pipe I/O
+PIPEDUMP_F(void) pd_close_fd(pipedump_t * pd, int fildes);
 
 /// @name Pipe management
 PIPEDUMP_F(void) pd_free(pipedump_t ** pd);
-PIPEDUMP_F(void) pd_close_fd(pipedump_t * pd, int option);
 PIPEDUMP_F(int) pd_get_option(pipedump_t * pd, int option, void * outvalue);
 PIPEDUMP_F(pipedump_t *) pd_init(const char * file, char * const argv[]);
 

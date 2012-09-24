@@ -61,26 +61,10 @@
 /////////////////
 
 #ifdef PMARK
-#pragma mark - Pipe management
+#pragma mark - Pipe I/O
 #endif
 
-void pd_free(pipedump_t ** pdp)
-{
-   assert((pdp != NULL) && "pd_free() cannot accept a NULL value");
-   assert((*pdp != NULL) && "pd_free() accept a pointer referencing NULL");
-   if ((*pdp)->pipeerr != -1)
-      close((*pdp)->pipeerr);
-   if ((*pdp)->pipein != -1)
-      close((*pdp)->pipein);
-   if ((*pdp)->pipeout != -1)
-      close((*pdp)->pipeout);
-   free(*pdp);
-   *pdp = NULL;
-   return;
-}
-
-
-void pd_close_fd(pipedump_t * pd, int option)
+void pd_close_fd(pipedump_t * pd, int fildes)
 {
    switch(option)
    {
@@ -105,6 +89,30 @@ void pd_close_fd(pipedump_t * pd, int option)
       default:
       break;
    };
+   return;
+}
+
+
+#ifdef PMARK
+#pragma mark - Pipe Logging
+#endif
+
+#ifdef PMARK
+#pragma mark - Pipe management
+#endif
+
+void pd_free(pipedump_t ** pdp)
+{
+   assert((pdp != NULL) && "pd_free() cannot accept a NULL value");
+   assert((*pdp != NULL) && "pd_free() accept a pointer referencing NULL");
+   if ((*pdp)->pipeerr != -1)
+      close((*pdp)->pipeerr);
+   if ((*pdp)->pipein != -1)
+      close((*pdp)->pipein);
+   if ((*pdp)->pipeout != -1)
+      close((*pdp)->pipeout);
+   free(*pdp);
+   *pdp = NULL;
    return;
 }
 

@@ -136,10 +136,6 @@ struct pipedump_config
 // main statement
 int main(int, char **);
 
-int pipedump_log(pdconfig_t * cnf, const uint8_t * buff, size_t len, int source);
-int pipedump_logclose(pdconfig_t * cnf);
-int pipedump_logopen(pdconfig_t * cnf);
-
 // displays usage
 void pipedump_usage(void);
 
@@ -255,23 +251,34 @@ int main(int argc, char * argv[])
       return(1);
    };
 
+   // initializes pipedump instance
+   if ((cnf.pd = pd_init(pargv[0], pargv)) == NULL)
+   {
+      perror("pd_init()");
+      return(1);
+   };
+
    // open output log
    if ((cnf.verbosity))
       fprintf(stderr, "%s: opening logfile \"%s\"...\n", PROGRAM_NAME, cnf.logfile);
-   if (pipedump_logopen(&cnf) == -1)
+   if ((cnf.fd = pd_openlog(cnf.pd, cnf.logfile, 0644)) == -1)
+   {
+      perror("pd_openlog()");
+      pd_free(&cnf.pd);
       return(1);
+   };
 
    // logs command to be executed
    for(pos = 0; pargv[pos]; pos++)
-      pipedump_log(&cnf, (uint8_t *)pargv[pos], strlen(pargv[pos]), 3);
+      pd_log(cnf.pd, (uint8_t *)pargv[pos], strlen(pargv[pos]), 3);
 
    // executes command
    if ((cnf.verbosity))
       fprintf(stderr, "%s: executing \"%s\"...\n", PROGRAM_NAME, pargv[0]);
-   if ((cnf.pd = pd_init(pargv[0], pargv)) == NULL)
+   if (pd_fork(cnf.pd) == -1)
    {
-      perror("pd_open()");
-      pipedump_logclose(&cnf);
+      perror("pd_fork()");
+      pd_free(&cnf.pd);
       return(1);
    };
 
@@ -297,8 +304,8 @@ int main(int argc, char * argv[])
          {
             if ((cnf.verbosity))
                fprintf(stderr, "%s: logging %i bytes for STDIN\n", PROGRAM_NAME, (int)len);
-            pd_copy(cnf.pd, STDIN_FILENO, PIPEDUMP_STDIN, cnf.buff, len);
-            pipedump_log(&cnf, cnf.buff, len, 0);
+            pd_write(cnf.pd, PIPEDUMP_STDIN, cnf.buff, len);
+            pd_log(cnf.pd, cnf.buff, len, 0);
          };
       };
 
@@ -309,7 +316,8 @@ int main(int argc, char * argv[])
          {
             if ((cnf.verbosity))
                fprintf(stderr, "%s: logging %i bytes for STDOUT\n", PROGRAM_NAME, (int)len);
-            pipedump_log(&cnf, cnf.buff, len, 1);
+            pd_write(cnf.pd, STDOUT_FILENO, cnf.buff, len);
+            pd_log(cnf.pd, cnf.buff, len, 1);
          };
       };
 
@@ -320,7 +328,8 @@ int main(int argc, char * argv[])
          {
             if ((cnf.verbosity))
                fprintf(stderr, "%s: logging %i bytes for STDERR\n", PROGRAM_NAME, (int)len);
-            pipedump_log(&cnf, cnf.buff, len, 2);
+            pd_write(cnf.pd, STDERR_FILENO, cnf.buff, len);
+            pd_log(cnf.pd, cnf.buff, len, 2);
          };
       };
 
@@ -337,175 +346,17 @@ int main(int argc, char * argv[])
       {
          if ((waitpid(cnf.pid, &ret, 0)) == -1)
             perror("waitid()");
-         pd_free(&cnf.pd);
-         pipedump_logclose(&cnf);
-
 
          // return with exit code of child
          if ((cnf.verbosity))
             fprintf(stderr, "%s: exiting with status %i\n", PROGRAM_NAME, WEXITSTATUS(ret));
+         pd_free(&cnf.pd);
          return(WEXITSTATUS(ret));
       };
    };
 
    // closes files
    pd_free(&cnf.pd);
-   pipedump_logclose(&cnf);
-
-   return(0);
-}
-
-
-int pipedump_log(pdconfig_t * cnf, const uint8_t * buff, size_t len, int source)
-{
-   // declare local vars
-   unsigned       pos;
-   struct timeval tp;
-   uint8_t        ipv6_header[40];
-   uint8_t        udp_header[48];
-   uint32_t       msb;
-   uint32_t       lsb;
-   uint32_t       pcap_len;
-   uint32_t       udp_len;
-   uint32_t       port;
-
-   struct
-   {
-      uint32_t       ts_sec;
-      uint32_t       ts_usec;
-      uint32_t       incl_len;
-      uint32_t       orig_len;
-   } pcap_header;
-
-   // grabs timestamp
-   gettimeofday(&tp, NULL);
-
-   // determines lengths
-   udp_len  = (uint32_t) len + 8;      // data + UDP header
-   pcap_len = udp_len + 40;  // UDP length + IPv6 header
-
-   // calculate port
-   port = cnf->start_port + source;
-
-   // computes pcap header
-   pcap_header.ts_sec   = (uint32_t) tp.tv_sec;
-   pcap_header.ts_usec  = (uint32_t) tp.tv_usec;
-   pcap_header.incl_len = (uint32_t) pcap_len;
-   pcap_header.orig_len = (uint32_t) pcap_len;
-
-   // computes IPv6 header
-   memset(ipv6_header, 0, 40);
-   ipv6_header[0] = 0x60;                     // version
-   ipv6_header[4] = (udp_len >> 8) & 0xFF;    // Payload Length (byte 0)
-   ipv6_header[5] = (udp_len >> 0) & 0xFF;    // Payload Length (byte 1)
-   ipv6_header[6] = 17;                       // Next Header
-   ipv6_header[7] = 7;                        // Hop Limit
-   if (source == 0)
-      ipv6_header[23] = 1;                    // Source Address
-   else
-      ipv6_header[39] = 1;                    // Destination Address
-
-   // computes UDP header
-   memset(udp_header, 0, 48);
-   if (source == 0)
-      udp_header[15] = 1;                     // Source Address
-   else
-      udp_header[31] = 1;                     // Destination Address
-   udp_header[34] = (udp_len >> 8) & 0xFF;    // Payload Length (byte 3)
-   udp_header[35] = (udp_len >> 0) & 0xFF;    // Payload Length (byte 4)
-   udp_header[39] = 17;                       // Next Header
-   udp_header[40] = (port >> 8) & 0xFF;       // Source Port (byte 0)
-   udp_header[41] = (port >> 0) & 0xFF;       // Source Port (byte 1)
-   udp_header[42] = (port >> 8) & 0xFF;       // Destination Port (byte 0)
-   udp_header[43] = (port >> 0) & 0xFF;       // Destination Port (byte 1)
-   udp_header[44] = (udp_len >> 8) & 0xFF;    // Length (byte 0)
-   udp_header[45] = (udp_len >> 0) & 0xFF;    // Length (byte 1)
-
-   // computes checksum
-   msb = 0;
-   lsb = 0;
-   for(pos = 0; pos < 48; pos += 2)
-   {
-      lsb = udp_header[pos+0] + (lsb & 0xFF) + (((msb & 0x100) == 1) ? 1 : 0);
-      msb = (msb & 0xFF);
-      msb = udp_header[pos+1] + (msb & 0xFF) + (((lsb & 0x100) == 1) ? 1 : 0);
-      lsb = (lsb & 0xFF);
-   }
-   for(pos = 0; pos < len; pos += 2)
-   {
-      lsb = buff[pos+0] + (lsb & 0xFF) + (((msb & 0x100) == 1) ? 1 : 0);
-      msb = (msb & 0xFF);
-      msb = buff[pos+1] + (msb & 0xFF) + (((lsb & 0x100) == 1) ? 1 : 0);
-      lsb = (lsb & 0xFF);
-   }
-   lsb = (lsb & 0xFF) + (((msb & 0x100) == 1) ? 1 : 0);
-   msb = (msb & 0xFF);
-   lsb = (lsb & 0xFF);
-   if ((msb == 0) && (lsb == 0))
-   {
-      msb = 0xFF;
-      lsb = 0xFF;
-   };
-   udp_header[46] = msb;
-   udp_header[47] = lsb;
-
-   // writes data
-   write(cnf->fd, &pcap_header, sizeof(pcap_header));
-   write(cnf->fd, ipv6_header, 40);
-   write(cnf->fd, &udp_header[40], 8);
-   write(cnf->fd, buff, len);
-
-   return(0);
-}
-
-
-int pipedump_logclose(pdconfig_t * cnf)
-{
-   if (cnf->fd == -1)
-      return(0);
-   close(cnf->fd);
-   return(0);
-}
-
-
-int pipedump_logopen(pdconfig_t * cnf)
-{
-   // declare local vars
-   unsigned uvar;
-   int      var;
-
-   // open output log
-   if ((cnf->verbosity))
-      fprintf(stderr, "%s: opening \"%s\" for writing...\n", PROGRAM_NAME, cnf->logfile);
-   if ((cnf->fd = open(cnf->logfile, O_WRONLY|O_CREAT|O_TRUNC, 0644)) == -1)
-   {
-      perror("open()");
-      return(-1);
-   };
-
-   // print header (magic_number)
-   uvar = 0xa1b2c3d4;
-   write(cnf->fd, &uvar, sizeof(uvar));
-
-   // print header (version_major/version_minor)
-   uvar = 0x00020004;
-   write(cnf->fd, &uvar, sizeof(uvar));
-
-   // print header (thiszone)
-   var = 0;
-   write(cnf->fd, &var, sizeof(var));
-
-   // print header (sigfigs)
-   uvar = 0;
-   write(cnf->fd, &uvar, sizeof(uvar));
-
-   // print header (snaplen)
-   uvar = 65535;
-   write(cnf->fd, &uvar, sizeof(uvar));
-
-   // print header (network)
-   uvar = 101;
-   write(cnf->fd, &uvar, sizeof(uvar));
 
    return(0);
 }

@@ -162,6 +162,7 @@ PIPEDUMP_F(int) pd_fildes(pipedump_t * pd, int fildes);
 PIPEDUMP_F(void) pd_free(pipedump_t ** pdp);
 PIPEDUMP_F(int) pd_get_option(pipedump_t * pd, int option, void * outvalue);
 PIPEDUMP_F(pipedump_t *) pd_init(const char * file, char * const argv[]);
+PIPEDUMP_F(int) pd_fork(pipedump_t * pd);
 
 /// @name Library meta information
 PIPEDUMP_F(const char *) pd_version(void);

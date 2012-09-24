@@ -51,7 +51,7 @@
 #include <stdlib.h>
 #include <assert.h>
 #include <fcntl.h>
-
+#include <sys/time.h>
 
 
 /////////////////
@@ -132,6 +132,173 @@ ssize_t pd_write(pipedump_t * pd, int fildes, const void * buf, size_t nbyte)
 #pragma mark - Pipe Logging
 #endif
 
+int pd_closelog(pipedump_t * pd)
+{
+   assert((pd != NULL)   && "pd must not be NULL");
+   if (pd->logfd == -1)
+      return(0);
+   close(pd->logfd);
+   pd->logfd = -1;
+   return(0);
+}
+
+
+int pd_log(pipedump_t * pd, const void * vbuf, size_t nbyte, int srcfd)
+{
+   // declare local vars
+   unsigned         pos;
+   struct timeval   tp;
+   uint8_t          ipv6_header[40];
+   uint8_t          udp_header[48];
+   uint32_t         msb;
+   uint32_t         lsb;
+   uint32_t         pcap_len;
+   uint32_t         udp_len;
+   uint32_t         port;
+   const uint8_t  * buff;
+
+   struct
+   {
+      uint32_t       ts_sec;
+      uint32_t       ts_usec;
+      uint32_t       incl_len;
+      uint32_t       orig_len;
+   } pcap_header;
+
+   assert((pd != NULL)   && "pd must not be NULL");
+   assert((vbuf != NULL) && "buf must not be NULL");
+   assert((nbyte != 0)   && "nbyte must not be 0");
+   assert((srcfd != -1)  && "srcfd must not be -1");
+
+   buff = vbuf;
+
+   // grabs timestamp
+   gettimeofday(&tp, NULL);
+
+   // determines lengths
+   udp_len  = (uint32_t) nbyte + 8;      // data + UDP header
+   pcap_len = udp_len + 40;  // UDP length + IPv6 header
+
+   // calculate port
+   port = pd->pcap_sport + srcfd;
+
+   // computes pcap header
+   pcap_header.ts_sec   = (uint32_t) tp.tv_sec;
+   pcap_header.ts_usec  = (uint32_t) tp.tv_usec;
+   pcap_header.incl_len = (uint32_t) pcap_len;
+   pcap_header.orig_len = (uint32_t) pcap_len;
+
+   // computes IPv6 header
+   memset(ipv6_header, 0, 40);
+   ipv6_header[0] = 0x60;                     // version
+   ipv6_header[4] = (udp_len >> 8) & 0xFF;    // Payload Length (byte 0)
+   ipv6_header[5] = (udp_len >> 0) & 0xFF;    // Payload Length (byte 1)
+   ipv6_header[6] = 17;                       // Next Header
+   ipv6_header[7] = 7;                        // Hop Limit
+   if (srcfd == PIPEDUMP_STDIN)
+      ipv6_header[23] = 1;                    // Source Address
+   else
+      ipv6_header[39] = 1;                    // Destination Address
+
+   // computes UDP header
+   memset(udp_header, 0, 48);
+   if (srcfd == PIPEDUMP_STDIN)
+      udp_header[15] = 1;                     // Source Address
+   else
+      udp_header[31] = 1;                     // Destination Address
+   udp_header[34] = (udp_len >> 8) & 0xFF;    // Payload Length (byte 3)
+   udp_header[35] = (udp_len >> 0) & 0xFF;    // Payload Length (byte 4)
+   udp_header[39] = 17;                       // Next Header
+   udp_header[40] = (port >> 8) & 0xFF;       // Source Port (byte 0)
+   udp_header[41] = (port >> 0) & 0xFF;       // Source Port (byte 1)
+   udp_header[42] = (port >> 8) & 0xFF;       // Destination Port (byte 0)
+   udp_header[43] = (port >> 0) & 0xFF;       // Destination Port (byte 1)
+   udp_header[44] = (udp_len >> 8) & 0xFF;    // Length (byte 0)
+   udp_header[45] = (udp_len >> 0) & 0xFF;    // Length (byte 1)
+
+   // computes checksum
+   msb = 0;
+   lsb = 0;
+   for(pos = 0; pos < 48; pos += 2)
+   {
+      lsb = udp_header[pos+0] + (lsb & 0xFF) + (((msb & 0x100) == 1) ? 1 : 0);
+      msb = (msb & 0xFF);
+      msb = udp_header[pos+1] + (msb & 0xFF) + (((lsb & 0x100) == 1) ? 1 : 0);
+      lsb = (lsb & 0xFF);
+   }
+   for(pos = 0; pos < nbyte; pos += 2)
+   {
+      lsb = buff[pos+0] + (lsb & 0xFF) + (((msb & 0x100) == 1) ? 1 : 0);
+      msb = (msb & 0xFF);
+      msb = buff[pos+1] + (msb & 0xFF) + (((lsb & 0x100) == 1) ? 1 : 0);
+      lsb = (lsb & 0xFF);
+   }
+   lsb = (lsb & 0xFF) + (((msb & 0x100) == 1) ? 1 : 0);
+   msb = (msb & 0xFF);
+   lsb = (lsb & 0xFF);
+   if ((msb == 0) && (lsb == 0))
+   {
+      msb = 0xFF;
+      lsb = 0xFF;
+   };
+   udp_header[46] = msb;
+   udp_header[47] = lsb;
+
+   // writes data
+   write(pd->logfd, &pcap_header, sizeof(pcap_header));
+   write(pd->logfd, ipv6_header, 40);
+   write(pd->logfd, &udp_header[40], 8);
+   write(pd->logfd, buff, nbyte);
+
+   return(0);
+}
+
+
+int pd_openlog(pipedump_t * pd, const char * logfile, mode_t mode)
+{
+   // declare local vars
+   int      fd;
+   unsigned uvar;
+   int      var;
+
+   assert((pd != NULL)      && "pd must not be NULL");
+   assert((logfile != NULL) && "logfile must not be NULL");
+
+   if (pd->logfd != -1)
+      return(0);
+
+   // open output log
+   if ((fd = open(logfile, O_WRONLY|O_CREAT|O_TRUNC, mode)) == -1)
+      return(-1);
+
+   // print header (magic_number)
+   uvar = 0xa1b2c3d4;
+   write(fd, &uvar, sizeof(uvar));
+
+   // print header (version_major/version_minor)
+   uvar = 0x00020004;
+   write(fd, &uvar, sizeof(uvar));
+
+   // print header (thiszone)
+   var = 0;
+   write(fd, &var, sizeof(var));
+
+   // print header (sigfigs)
+   uvar = 0;
+   write(fd, &uvar, sizeof(uvar));
+
+   // print header (snaplen)
+   uvar = 65535;
+   write(fd, &uvar, sizeof(uvar));
+
+   // print header (network)
+   uvar = 101;
+   write(fd, &uvar, sizeof(uvar));
+
+   return(0);
+}
+
+
 #ifdef PMARK
 #pragma mark - Pipe management
 #endif
@@ -158,16 +325,36 @@ int pd_fildes(pipedump_t * pd, int fildes)
 
 void pd_free(pipedump_t ** pdp)
 {
-   assert((pdp != NULL) && "pd_free() cannot accept a NULL value");
+   int          pos;
+   pipedump_t * pd;
+
+   assert((pdp != NULL)  && "pd_free() cannot accept a NULL value");
    assert((*pdp != NULL) && "pd_free() accept a pointer referencing NULL");
-   if ((*pdp)->pipeerr != -1)
-      close((*pdp)->pipeerr);
-   if ((*pdp)->pipein != -1)
-      close((*pdp)->pipein);
-   if ((*pdp)->pipeout != -1)
-      close((*pdp)->pipeout);
+
+   pd = *pdp;
+
+   // close file descriptors
+   if (pd->pipeerr != -1)
+      close(pd->pipeerr);
+   if (pd->pipein != -1)
+      close(pd->pipein);
+   if (pd->pipeout != -1)
+      close(pd->pipeout);
+   if (pd->logfd != -1)
+      close(pd->logfd);
+
+   // free argv
+   if ((pd->argv))
+   {
+      for(pos = 0; pd->argv[pos]; pos++)
+         free(pd->argv[pos]);
+      free(pd->argv);
+   };
+
+   // free struct
    free(*pdp);
    *pdp = NULL;
+
    return;
 }
 
@@ -203,42 +390,100 @@ int pd_get_option(pipedump_t * pd, int option, void * outvalue)
 pipedump_t * pd_init(const char *file, char *const argv[])
 {
    pipedump_t * pd;
-   int          pipes[6];
-   int          pos;
-   char      ** targv;
-   int          argc;
    int          eol;
+   int          argc;
 
    assert((file != NULL) && "pd_open() must provide a valid pointer for *file");
-   assert((argv != NULL) && "pd_open() must provide a valid pointer for *argv[]");
 
    // allocates memory for pipe information
    if ((pd = calloc(sizeof(pipedump_t), 1)) == NULL)
       return(NULL);
 
-   // creates pipe for STDIN
-   if ((pipe(&pipes[0 * 2])) == -1)
+   // sets default values
+   pd->pipeerr    = -1;
+   pd->pipein     = -1;
+   pd->pipeout    = -1;
+   pd->logfd      = -1;
+   pd->pcap_sport = 19840;
+
+   // copies file to execute
+   if ((pd->file = strdup(file)) == NULL)
    {
-      free(pd);
+      pd_free(&pd);
       return(NULL);
    };
+
+   // calculate argc
+   argc = 1;
+   if ((argv))
+      for(argc = 0; argv[argc]; argc++);
+
+   // allocate memory for argument list and strip double/single quotation marks
+   if ((pd->argv = calloc(sizeof(char *), (argc+1))) == NULL)
+   {
+      pd_free(&pd);
+      return(NULL);
+   };
+
+   // generate an argv list if one is not provided
+   if (!(argv))
+   {
+      pd->argv[0] = strdup(file);
+      if (!(pd->argv[0]))
+      {
+         pd_free(&pd);
+         return(NULL);
+      };
+      return(pd);
+   };
+
+   // strips quotation marks
+   for(pd->argc = 0; pd->argc < argc; pd->argc++)
+   {
+      // strips leading single/double quote
+      if ((argv[pd->argc][0] == '"') || (argv[pd->argc][0] == '\''))
+         pd->argv[pd->argc] = strdup(&argv[pd->argc][1]);
+      else
+         pd->argv[pd->argc] = strdup(&argv[pd->argc][0]);
+      if (!(pd->argv[pd->argc]))
+      {
+         pd_free(&pd);
+         return(NULL);
+      };
+
+      // strips tailing single/double quote
+      eol = (int)strlen(pd->argv[pd->argc]);
+      if ((pd->argv[pd->argc][eol-1] == '"') || (pd->argv[pd->argc][eol-1] == '\''))
+         pd->argv[pd->argc][eol-1] = '\0';
+   };
+
+   return(pd);
+}
+
+
+int pd_fork(pipedump_t * pd)
+{
+   int          pipes[6];
+   int          pos;
+
+   // creates pipe for STDIN
+   if ((pipe(&pipes[0 * 2])) == -1)
+      return(-1);
 
    // creates pipe for STDOUT
    if ((pipe(&pipes[1 * 2])) == -1)
    {
-      free(pd);
       for(pos = 0; pos < 2; pos++)
          close(pipes[pos]);
-      return(NULL);
+      return(-1);
    };
 
    // creates pipe for STDERR
    if ((pipe(&pipes[2 * 2])) == -1)
    {
-      free(pd);
       for(pos = 0; pos < 4; pos++)
          close(pipes[pos]);
-      return(NULL);
+      return(-1);
    };
 
    // fork process
@@ -250,8 +495,7 @@ pipedump_t * pd_init(const char *file, char *const argv[])
       case -1:
       for(pos = 0; pos < 6; pos++)
          close(pipes[pos]);
-      free(pd);
-      return(NULL);
+      return(-1);
 
 
       //
@@ -259,54 +503,36 @@ pipedump_t * pd_init(const char *file, char *const argv[])
       //
       case 0:
       // bind STDIN , STDOUT, and STDERR to pipes
-      if ((pd->pipein = dup2(pipes[0], STDIN_FILENO)) == -1)
+      if ((pd->pipeerr = dup2(pipes[5], STDERR_FILENO)) == -1)
       {
+         perror("dup2(pipe, STDERR_FILENO)");
          for(pos = 0; pos < 6; pos++)
             close(pipes[pos]);
-         free(pd);
-         return(NULL);
+         exit(1);
       };
       if ((pd->pipeout = dup2(pipes[3], STDOUT_FILENO)) == -1)
       {
+         perror("dup2(pipe, STDOUT_FILENO)");
          for(pos = 0; pos < 6; pos++)
             close(pipes[pos]);
-         free(pd);
-         return(NULL);
+         exit(1);
       };
-      if ((pd->pipeerr = dup2(pipes[5], STDERR_FILENO)) == -1)
+      if ((pd->pipein = dup2(pipes[0], STDIN_FILENO)) == -1)
       {
+         perror("dup2(pipe, STDIN_FILENO)");
          for(pos = 0; pos < 6; pos++)
             close(pipes[pos]);
-         free(pd);
-         return(NULL);
+         exit(1);
       };
       // close master side of pipes
       close(pipes[1]);
       close(pipes[2]);
       close(pipes[4]);
-      // calculate argc
-      for(argc = 0; argv[argc]; argc++);
-      // allocate memory for argument list and strip double/single quotation marks
-      if ((targv = calloc(sizeof(char *), (argc+1))) == NULL)
-      {
-         fprintf(stderr, "out of virtual memory\n");
-         exit(1);
-      };
-      for(pos = 0; pos < argc; pos++)
-      {
-         if ((argv[pos][0] == '"') || (argv[pos][0] == '\''))
-            targv[pos] = strdup(&argv[pos][1]);
-         else
-            targv[pos] = strdup(&argv[pos][0]);
-         eol = (int)strlen(targv[pos]);
-         if ((targv[pos][eol-1] == '"') || (targv[pos][eol-1] == '\''))
-            targv[pos][eol-1] = '\0';
-      };
       // execute command
-      if ((execvp(file, targv)))
+      if ((execvp(pd->file, pd->argv)))
          perror("execvp()");
       pd_free(&pd);
-      exit(0);
+      exit(1);
 
       //
       // master process
@@ -321,10 +547,10 @@ pipedump_t * pd_init(const char *file, char *const argv[])
       close(pipes[0]);
       close(pipes[3]);
       close(pipes[5]);
-      return(pd);
+      return(pd->pid);
    };
 
-   return(NULL);
+   return(-1);
 }
 
 

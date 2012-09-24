@@ -83,10 +83,20 @@
 
 struct pipedump_state
 {
-   int   pipein;
-   int   pipeout;
-   int   pipeerr;
-   pid_t pid;
+   // pipes
+   int     pipein;
+   int     pipeout;
+   int     pipeerr;
+
+   // log
+   int     logfd;
+   int     pcap_sport;
+
+   // command/process
+   int     argc;
+   char  * file;
+   char ** argv;
+   pid_t   pid;
 };
 
 

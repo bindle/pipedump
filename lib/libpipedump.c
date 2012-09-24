@@ -215,7 +215,7 @@ pipedump_t * pd_open(const char *file, char *const argv[])
       close(pipes[2]);
       close(pipes[4]);
       for(argc = 0; argv[argc]; argc++);
-      if ((targv = calloc(sizeof(char *), argc)) == NULL)
+      if ((targv = calloc(sizeof(char *), (argc+1))) == NULL)
       {
          fprintf(stderr, "out of virtual memory\n");
          exit(1);

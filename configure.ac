@@ -96,7 +96,7 @@ AM_PROG_LEX
 AC_PROG_LN_S
 
 # GNU Libtool Support
-LT_INIT(dlopen disable-fast-install win32-dll)
+LT_INIT(dlopen disable-fast-install win32-dll disable-shared)
 
 # custom configure options
 AC_BINDLE_ENABLE_WARNINGS

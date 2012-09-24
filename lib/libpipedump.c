@@ -178,15 +178,21 @@ pipedump_t * pd_open(const char *file, char *const argv[])
    // fork process
    switch(pd->pid = fork())
    {
+      //
       // error forking process
+      //
       case -1:
       for(pos = 0; pos < 6; pos++)
          close(pipes[pos]);
       free(pd);
       return(NULL);
 
+
+      //
       // child process
+      //
       case 0:
+      // bind STDIN , STDOUT, and STDERR to pipes
       if ((pd->pipein = dup2(pipes[0], STDIN_FILENO)) == -1)
       {
          for(pos = 0; pos < 6; pos++)
@@ -208,10 +214,13 @@ pipedump_t * pd_open(const char *file, char *const argv[])
          free(pd);
          return(NULL);
       };
+      // close master side of pipes
       close(pipes[1]);
       close(pipes[2]);
       close(pipes[4]);
+      // calculate argc
       for(argc = 0; argv[argc]; argc++);
+      // allocate memory for argument list and strip double/single quotation marks
       if ((targv = calloc(sizeof(char *), (argc+1))) == NULL)
       {
          fprintf(stderr, "out of virtual memory\n");
@@ -227,12 +236,15 @@ pipedump_t * pd_open(const char *file, char *const argv[])
          if ((targv[pos][eol-1] == '"') || (targv[pos][eol-1] == '\''))
             targv[pos][eol-1] = '\0';
       };
+      // execute command
       if ((execvp(file, targv)))
          perror("execvp()");
       pd_close(&pd);
       exit(0);
 
+      //
       // master process
+      //
       default:
       fcntl(STDIN_FILENO, F_SETFL, O_NONBLOCK);
       fcntl(pipes[2],     F_SETFL, O_NONBLOCK);

@@ -156,6 +156,7 @@ int pd_log(pipedump_t * pd, const void * vbuf, size_t nbyte, int srcfd)
    uint32_t         udp_len;
    uint32_t         port;
    const uint8_t  * buff;
+   uint8_t          header[48];
 
    struct
    {
@@ -170,6 +171,7 @@ int pd_log(pipedump_t * pd, const void * vbuf, size_t nbyte, int srcfd)
    assert((nbyte != 0)   && "nbyte must not be 0");
    assert((srcfd != -1)  && "srcfd must not be -1");
 
+   // casts void reference to uint8_t reference
    buff = vbuf;
 
    // grabs timestamp

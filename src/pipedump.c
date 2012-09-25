@@ -143,7 +143,6 @@ int main(int argc, char * argv[])
    pid_t           pid;
    struct pollfd   pollfd[3];
    int             pollfd_len;
-   int             quiet;
    int             verbosity;
    int             debug;
    int             start_port;
@@ -167,7 +166,6 @@ int main(int argc, char * argv[])
    start_port = 19840;
    verbosity  = 0;
    logfile    = NULL;
-   quiet      = 0;
    debug      = 0;
    buff_len   = 0;
 
@@ -201,7 +199,6 @@ int main(int argc, char * argv[])
          break;
 
          case 'q':
-         quiet = 1;
          break;
 
          case 'V':

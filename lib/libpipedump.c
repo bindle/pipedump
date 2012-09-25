@@ -143,114 +143,97 @@ int pd_closelog(pipedump_t * pd)
 }
 
 
-int pd_log(pipedump_t * pd, const void * vbuf, size_t nbyte, int srcfd)
+int pd_log(pipedump_t * pd, const void * buf, size_t nbyte, int srcfd)
 {
    // declare local vars
-   unsigned         pos;
    struct timeval   tp;
-   uint8_t          ipv6_header[40];
-   uint8_t          udp_header[48];
-   uint32_t         msb;
-   uint32_t         lsb;
-   uint32_t         pcap_len;
-   uint32_t         udp_len;
    uint32_t         port;
-   const uint8_t  * buff;
-   uint8_t          header[48];
-
-   struct
+   uint8_t        * src_addr;
+   uint8_t        * dst_addr;
+   union
    {
-      uint32_t       ts_sec;
-      uint32_t       ts_usec;
-      uint32_t       incl_len;
-      uint32_t       orig_len;
-   } pcap_header;
+      struct
+      {
+         // PCAP headers
+         uint32_t       pcap_ts_sec;
+         uint32_t       pcap_ts_usec;
+         uint32_t       pcap_incl_len;
+         uint32_t       pcap_orig_len;
+
+         // IPv6 headers
+         uint8_t        ipv6_version;
+         uint8_t        ipv6_traffic_class;
+         uint8_t        ipv6_flow_label[2];
+         uint8_t        ipv6_payload_length[2];
+         uint8_t        ipv6_next_header;
+         uint8_t        ipv6_hop_limit;
+         uint8_t        ipv6_src_addr[16];
+         uint8_t        ipv6_dst_addr[16];
+
+         // UDP headers
+         uint8_t        udp_src_port[2];
+         uint8_t        udp_dst_port[2];
+         uint8_t        udp_length[2];
+         uint8_t        udp_checksum[2];
+      } members;
+      uint8_t bytes[64];
+   } header;
 
    assert((pd != NULL)   && "pd must not be NULL");
-   assert((vbuf != NULL) && "buf must not be NULL");
+   assert((buf != NULL) && "buf must not be NULL");
    assert((nbyte != 0)   && "nbyte must not be 0");
    assert((srcfd != -1)  && "srcfd must not be -1");
-
-   // casts void reference to uint8_t reference
-   buff = vbuf;
 
    // grabs timestamp
    gettimeofday(&tp, NULL);
 
-   // determines lengths
-   udp_len  = (uint32_t) nbyte + 8;      // data + UDP header
-   pcap_len = udp_len + 40;  // UDP length + IPv6 header
+   // calculate addresses
+   if ((srcfd == PIPEDUMP_STDIN) || (srcfd == STDIN_FILENO))
+   {
+      src_addr = pd->lo_addr.s6_addr;
+      dst_addr = pd->rm_addr.s6_addr;
+   } else {
+      src_addr = pd->rm_addr.s6_addr;
+      dst_addr = pd->lo_addr.s6_addr;
+   };
 
    // calculate port
    port = pd->pcap_sport + srcfd;
 
+   // clears header
+   memset(header.bytes, 0, 64);
+
    // computes pcap header
-   pcap_header.ts_sec   = (uint32_t) tp.tv_sec;
-   pcap_header.ts_usec  = (uint32_t) tp.tv_usec;
-   pcap_header.incl_len = (uint32_t) pcap_len;
-   pcap_header.orig_len = (uint32_t) pcap_len;
+   header.members.pcap_ts_sec   = (uint32_t) tp.tv_sec;
+   header.members.pcap_ts_usec  = (uint32_t) tp.tv_usec;
+   header.members.pcap_incl_len = (uint32_t) (nbyte + 48);
+   header.members.pcap_orig_len = (uint32_t) (nbyte + 48);
 
    // computes IPv6 header
-   memset(ipv6_header, 0, 40);
-   ipv6_header[0] = 0x60;                     // version
-   ipv6_header[4] = (udp_len >> 8) & 0xFF;    // Payload Length (byte 0)
-   ipv6_header[5] = (udp_len >> 0) & 0xFF;    // Payload Length (byte 1)
-   ipv6_header[6] = 17;                       // Next Header
-   ipv6_header[7] = 7;                        // Hop Limit
-   if (srcfd == PIPEDUMP_STDIN)
-      ipv6_header[23] = 1;                    // Source Address
-   else
-      ipv6_header[39] = 1;                    // Destination Address
+   header.members.ipv6_version            = 0x60;
+   header.members.ipv6_payload_length[1]  = ((nbyte + 8) >> 8) & 0xFF;
+   header.members.ipv6_payload_length[0]  = ((nbyte + 8) >> 0) & 0xFF;
+   header.members.ipv6_next_header        = 17;
+   header.members.ipv6_hop_limit          = 7;
+   memcpy(header.members.ipv6_src_addr, src_addr, 16);
+   memcpy(header.members.ipv6_dst_addr, dst_addr, 16);
 
    // computes UDP header
-   memset(udp_header, 0, 48);
-   if (srcfd == PIPEDUMP_STDIN)
-      udp_header[15] = 1;                     // Source Address
-   else
-      udp_header[31] = 1;                     // Destination Address
-   udp_header[34] = (udp_len >> 8) & 0xFF;    // Payload Length (byte 3)
-   udp_header[35] = (udp_len >> 0) & 0xFF;    // Payload Length (byte 4)
-   udp_header[39] = 17;                       // Next Header
-   udp_header[40] = (port >> 8) & 0xFF;       // Source Port (byte 0)
-   udp_header[41] = (port >> 0) & 0xFF;       // Source Port (byte 1)
-   udp_header[42] = (port >> 8) & 0xFF;       // Destination Port (byte 0)
-   udp_header[43] = (port >> 0) & 0xFF;       // Destination Port (byte 1)
-   udp_header[44] = (udp_len >> 8) & 0xFF;    // Length (byte 0)
-   udp_header[45] = (udp_len >> 0) & 0xFF;    // Length (byte 1)
+   header.members.udp_src_port[0] = (port >> 8) & 0xFF;
+   header.members.udp_src_port[1] = (port >> 0) & 0xFF;
+   header.members.udp_dst_port[0] = (port >> 8) & 0xFF;
+   header.members.udp_dst_port[1] = (port >> 0) & 0xFF;
+   header.members.udp_length[0]   = ((nbyte + 8) >> 8) & 0xFF;
+   header.members.udp_length[1]   = ((nbyte + 8) >> 0) & 0xFF;
+   header.members.udp_checksum[0] = 0xFF;
+   header.members.udp_checksum[1] = 0xFF;
 
    // computes checksum
-   msb = 0;
-   lsb = 0;
-   for(pos = 0; pos < 48; pos += 2)
-   {
-      lsb = udp_header[pos+0] + (lsb & 0xFF) + (((msb & 0x100) == 1) ? 1 : 0);
-      msb = (msb & 0xFF);
-      msb = udp_header[pos+1] + (msb & 0xFF) + (((lsb & 0x100) == 1) ? 1 : 0);
-      lsb = (lsb & 0xFF);
-   }
-   for(pos = 0; pos < nbyte; pos += 2)
-   {
-      lsb = buff[pos+0] + (lsb & 0xFF) + (((msb & 0x100) == 1) ? 1 : 0);
-      msb = (msb & 0xFF);
-      msb = buff[pos+1] + (msb & 0xFF) + (((lsb & 0x100) == 1) ? 1 : 0);
-      lsb = (lsb & 0xFF);
-   }
-   lsb = (lsb & 0xFF) + (((msb & 0x100) == 1) ? 1 : 0);
-   msb = (msb & 0xFF);
-   lsb = (lsb & 0xFF);
-   if ((msb == 0) && (lsb == 0))
-   {
-      msb = 0xFF;
-      lsb = 0xFF;
-   };
-   udp_header[46] = msb;
-   udp_header[47] = lsb;
+   // Needs to be written
 
-   // writes data
-   write(pd->logfd, &pcap_header, sizeof(pcap_header));
-   write(pd->logfd, ipv6_header, 40);
-   write(pd->logfd, &udp_header[40], 8);
-   write(pd->logfd, buff, nbyte);
+   // writes data to logfile
+   write(pd->logfd, header.bytes, 64);
+   write(pd->logfd, (const uint8_t *)buf, nbyte);
 
    return(0);
 }

@@ -51,6 +51,7 @@
 #include <stdlib.h>
 #include <assert.h>
 #include <fcntl.h>
+#include <sys/stat.h>
 #include <sys/time.h>
 
 
@@ -244,7 +245,9 @@ int pd_log(pipedump_t * pd, const void * buf, size_t nbyte, int srcfd)
 int pd_openlog(pipedump_t * pd, const char * logfile, mode_t mode)
 {
    // declare local vars
-   int      fd;
+   int         fd;
+   struct stat sb;
+   int         err;
    union
    {
       struct
@@ -265,6 +268,9 @@ int pd_openlog(pipedump_t * pd, const char * logfile, mode_t mode)
    if (pd->logfd != -1)
       return(0);
 
+   // attempts to stat file
+   err = stat(logfile, &sb);
+
    // open output log
    if ((fd = open(logfile, O_WRONLY|O_CREAT|O_TRUNC, mode)) == -1)
       return(-1);
@@ -278,10 +284,13 @@ int pd_openlog(pipedump_t * pd, const char * logfile, mode_t mode)
    header.members.network      = 101;         // LINKTYPE_RAW
 
    // write header to log file
-   if (write(fd, header.bytes, 24) == -1)
+   if (err == -1)
    {
-      close(fd);
-      return(-1);
+      if (write(fd, header.bytes, 24) == -1)
+      {
+         close(fd);
+         return(-1);
+      };
    };
 
    pd->logfd = fd;

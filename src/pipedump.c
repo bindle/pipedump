@@ -160,6 +160,7 @@ int main(int argc, char * argv[])
    char       ** pargv;
    int           pos;
    int           ret;
+   char          buff[1024];
    ssize_t       len;
    pdconfig_t    cnf;
 
@@ -269,8 +270,16 @@ int main(int argc, char * argv[])
    };
 
    // logs command to be executed
+   len = snprintf(buff, 1024, "%s (%s) %s", PROGRAM_NAME, PACKAGE_NAME, PACKAGE_VERSION);
+   pd_log(cnf.pd, buff, len, 0xFFFF);
+   buff[0] = '\0';
+   strncat(buff, "Executing: ", 1024);
    for(pos = 0; pargv[pos]; pos++)
-      pd_log(cnf.pd, (uint8_t *)pargv[pos], strlen(pargv[pos]), 3);
+   {
+      strncat(buff, pargv[pos], 1024);
+      strncat(buff, " ", 1024);
+   };
+   pd_log(cnf.pd, buff, strlen(buff), 0xFFFF);
 
    // executes command
    if ((cnf.verbosity))

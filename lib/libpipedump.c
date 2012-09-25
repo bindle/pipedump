@@ -198,7 +198,9 @@ int pd_log(pipedump_t * pd, const void * buf, size_t nbyte, int srcfd)
    };
 
    // calculate port
-   port = pd->pcap_sport + srcfd;
+   port = srcfd;
+   if (srcfd < 3)
+      port = pd->pcap_sport + srcfd;
 
    // clears header
    memset(header.bytes, 0, 64);

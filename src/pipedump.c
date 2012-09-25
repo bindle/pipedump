@@ -59,6 +59,8 @@
 #include <sys/time.h>
 #include <sys/wait.h>
 
+extern char **environ;
+
 
 ///////////////////
 //               //
@@ -167,13 +169,14 @@ int main(int argc, char * argv[])
    int             pollfd_len;
    int             quiet;
    int             verbosity;
+   int             debug;
    int             start_port;
    const char    * logfile;
    uint8_t       * buff;
    size_t          buff_len;
 
    // getopt options
-   static char   short_opt[] = "b:ho:p:qvV";
+   static char   short_opt[] = "b:dho:p:qvV";
    static struct option long_opt[] =
    {
       {"help",          no_argument, 0, 'h'},
@@ -189,6 +192,7 @@ int main(int argc, char * argv[])
    verbosity  = 0;
    logfile    = NULL;
    quiet      = 0;
+   debug      = 0;
    buff_len   = 0;
 
    // loops through arguments
@@ -202,6 +206,10 @@ int main(int argc, char * argv[])
 
          case 'b':
          buff_len = atol(optarg);
+         break;
+
+         case 'd':
+         debug++;
          break;
 
          case 'h':
@@ -280,17 +288,28 @@ int main(int argc, char * argv[])
       return(1);
    };
 
-   // logs command to be executed
-   len = snprintf((char *)buff, 1024, "%s (%s) %s", PROGRAM_NAME, PACKAGE_NAME, PACKAGE_VERSION);
-   pd_log(pd, buff, len, 0xFFFF);
-   buff[0] = '\0';
-   strncat((char *)buff, "Executing: ", 1024);
-   for(pos = 0; pargv[pos]; pos++)
+   // logs debug information
+   if ((debug))
    {
-      strncat((char *)buff, pargv[pos], 1024);
-      strncat((char *)buff, " ", 1024);
+      // logs pipedump version
+      len = snprintf((char *)buff, 1024, "%s (%s) %s", PROGRAM_NAME, PACKAGE_NAME, PACKAGE_VERSION);
+      pd_log(pd, buff, len, 0xFFFF);
+
+      // logs environment variables
+      if (debug > 1)
+         for(pos = 0; environ[pos]; pos++)
+            pd_log(pd, environ[pos], strlen(environ[pos]), 0xFFFF);
+
+      // logs command
+      buff[0] = '\0';
+      strncat((char *)buff, "Executing: ", 1024);
+      for(pos = 0; pargv[pos]; pos++)
+      {
+         strncat((char *)buff, pargv[pos], 1024);
+         strncat((char *)buff, " ", 1024);
+      };
+      pd_log(pd, buff, strlen((char *)buff), 0xFFFF);
    };
-   pd_log(pd, buff, strlen((char *)buff), 0xFFFF);
 
    // executes command
    if ((verbosity))
@@ -391,6 +410,7 @@ void pipedump_usage(void)
    // PACKAGE_BUGREPORT
    printf(_("Usage: %s [OPTIONS] -- command\n"
          "  -b length                 length in bytes of buffer to allocate(default 4096)\n"
+         "  -d                        enable debug output registered on port 65535)\n"
          "  -h, --help                print this help and exit\n"
          "  -o file                   output file\n"
          "  -p port                   starting port number (default 19840)\n"

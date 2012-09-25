@@ -321,11 +321,10 @@ int main(int argc, char * argv[])
       // checks STDIN for data
       if (pollfd[2].revents & (POLLPRI|POLLIN))
       {
-         while((len = read(pollfd[2].fd, buff, buff_len)) > 0)
+         while((len = pd_copy(pd, pollfd[2].fd, PIPEDUMP_STDIN, buff, buff_len)) > 0)
          {
             if ((verbosity))
                fprintf(stderr, "%s: logging %i bytes for STDIN\n", PROGRAM_NAME, (int)len);
-            pd_write(pd, PIPEDUMP_STDIN, buff, len);
             pd_log(pd, buff, len, 0);
          };
       };
@@ -333,11 +332,10 @@ int main(int argc, char * argv[])
       // checks PIPEOUT for data
       if (pollfd[1].revents & (POLLPRI|POLLIN))
       {
-         while((len = read(pollfd[1].fd, buff, buff_len)) > 0)
+         while((len = pd_copy(pd, pollfd[1].fd, STDOUT_FILENO, buff, buff_len)) > 0)
          {
             if ((verbosity))
                fprintf(stderr, "%s: logging %i bytes for STDOUT\n", PROGRAM_NAME, (int)len);
-            pd_write(pd, STDOUT_FILENO, buff, len);
             pd_log(pd, buff, len, 1);
          };
       };
@@ -345,11 +343,10 @@ int main(int argc, char * argv[])
       // checks PIPEERR for data
       if (pollfd[0].revents & (POLLPRI|POLLIN))
       {
-         while((len = read(pollfd[0].fd, buff, buff_len)) > 0)
+         while((len = pd_copy(pd, pollfd[2].fd, STDERR_FILENO, buff, buff_len)) > 0)
          {
             if ((verbosity))
                fprintf(stderr, "%s: logging %i bytes for STDERR\n", PROGRAM_NAME, (int)len);
-            pd_write(pd, STDERR_FILENO, buff, len);
             pd_log(pd, buff, len, 2);
          };
       };

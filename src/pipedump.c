@@ -251,6 +251,7 @@ int main(int argc, char * argv[])
    if ((pd = pd_init(pargv[0], pargv)) == NULL)
    {
       perror("pd_init()");
+      free(buff);
       return(1);
    };
 
@@ -260,6 +261,7 @@ int main(int argc, char * argv[])
    if (pd_openlog(pd, logfile, 0644) == -1)
    {
       perror("pd_openlog()");
+      free(buff);
       pd_free(&pd);
       return(1);
    };
@@ -293,6 +295,7 @@ int main(int argc, char * argv[])
    if (pd_fork(pd) == -1)
    {
       perror("pd_fork()");
+      free(buff);
       pd_free(&pd);
       return(1);
    };
@@ -365,12 +368,14 @@ int main(int argc, char * argv[])
          // return with exit code of child
          if ((verbosity))
             fprintf(stderr, "%s: exiting with status %i\n", PROGRAM_NAME, WEXITSTATUS(ret));
+         free(buff);
          pd_free(&pd);
          return(WEXITSTATUS(ret));
       };
    };
 
    // closes files
+   free(buff);
    pd_free(&pd);
 
    return(0);

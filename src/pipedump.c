@@ -186,6 +186,10 @@ int main(int argc, char * argv[])
 
    // sets default values
    start_port = 19840;
+   verbosity  = 0;
+   logfile    = NULL;
+   quiet      = 0;
+   buff_len   = 0;
 
    // loops through arguments
    while((c = getopt_long(argc, argv, short_opt, long_opt, &opt_index)) != -1)

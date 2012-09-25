@@ -122,7 +122,7 @@ do_subst_dt = \
 
 
 # lists
-BUILT_SOURCES				=
+BUILT_SOURCES				= include/git-package-version
 TESTS					=
 XFAIL_TESTS				=
 EXTRA_MANS				=
@@ -149,10 +149,10 @@ DISTCHECK_CONFIGURE_FLAGS		= --enable-strictwarnings
 
 
 # custom targets
-.PHONY: autoreconf update gitclean build-aux/git-package-version
+.PHONY: autoreconf update gitclean include/git-package-version
 
-build-aux/git-package-version.txt:
-	$(top_srcdir)/contrib/bindletools/build-aux/git-package-version.sh $(top_srcdir)
+include/git-package-version:
+	@@GIT_VERSION_SCRIPT@ $(top_srcdir) > /dev/null 2>&1
 
 autoreconf:
 	autoreconf -i -f $(ACLOCAL_AMFLAGS) $(top_srcdir)

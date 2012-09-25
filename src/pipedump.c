@@ -100,9 +100,11 @@ extern char **environ;
 #ifndef PACKAGE_NAME
 #define PACKAGE_NAME ""
 #endif
-#ifndef PACKAGE_VERSION
-#define PACKAGE_VERSION ""
+#ifndef GIT_PACKAGE_STRING
+#define GIT_PACKAGE_STRING ""
 #endif
+#undef PACKAGE_VERSION
+#define PACKAGE_VERSION GIT_PACKAGE_STRING
 
 
 //////////////////

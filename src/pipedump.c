@@ -321,7 +321,7 @@ int main(int argc, char * argv[])
       // checks STDIN for data
       if (pollfd[2].revents & (POLLPRI|POLLIN))
       {
-         while((len = read(STDIN_FILENO, buff, buff_len)) > 0)
+         while((len = read(pollfd[2].fd, buff, buff_len)) > 0)
          {
             if ((verbosity))
                fprintf(stderr, "%s: logging %i bytes for STDIN\n", PROGRAM_NAME, (int)len);
@@ -345,7 +345,7 @@ int main(int argc, char * argv[])
       // checks PIPEERR for data
       if (pollfd[0].revents & (POLLPRI|POLLIN))
       {
-         while((len = read(pollfd[2].fd, buff, buff_len)) > 0)
+         while((len = read(pollfd[0].fd, buff, buff_len)) > 0)
          {
             if ((verbosity))
                fprintf(stderr, "%s: logging %i bytes for STDERR\n", PROGRAM_NAME, (int)len);
@@ -365,7 +365,7 @@ int main(int argc, char * argv[])
       };
 
       // exits if any of the pipes close
-      if ( (pollfd[1].revents & POLLHUP) || (pollfd[2].revents & POLLHUP) )
+      if ( (pollfd[0].revents & POLLHUP) || (pollfd[1].revents & POLLHUP) )
       {
          if ((waitpid(pid, &ret, 0)) == -1)
             perror("waitid()");

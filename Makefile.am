@@ -126,7 +126,8 @@ BUILT_SOURCES				=
 TESTS					=
 XFAIL_TESTS				=
 EXTRA_MANS				=
-EXTRA_DIST				= include/git-package-version.txt \
+EXTRA_DIST				= build-aux/git-tar-name.txt \
+					  include/git-package-version.txt \
 					  include/git-package-version.h \
 					  contrib/bindletools/COPYING \
 					  contrib/bindletools/README \

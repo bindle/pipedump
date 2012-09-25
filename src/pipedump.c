@@ -105,30 +105,6 @@ extern char **environ;
 #endif
 
 
-/////////////////
-//             //
-//  Datatypes  //
-//             //
-/////////////////
-
-/// tag data
-typedef struct pipedump_config pdconfig_t;
-struct pipedump_config
-{
-   pipedump_t    * pd;
-   int             pd_in;
-   int             fd;
-   pid_t           pid;
-   struct pollfd   pollfd[3];
-   int             quiet;
-   int             verbosity;
-   int             start_port;
-   const char    * logfile;
-   uint8_t       * buff;
-   size_t          buff_len;
-};
-
-
 //////////////////
 //              //
 //  Prototypes  //

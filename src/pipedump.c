@@ -155,14 +155,22 @@ void pipedump_version(void);
 int main(int argc, char * argv[])
 {
    // declare local vars
-   int           c;
-   int           opt_index;
-   char       ** pargv;
-   int           pos;
-   int           ret;
-   char          buff[1024];
-   ssize_t       len;
-   pdconfig_t    cnf;
+   int             c;
+   int             opt_index;
+   char         ** pargv;
+   int             pos;
+   int             ret;
+   ssize_t         len;
+   pipedump_t    * pd;
+   pid_t           pid;
+   struct pollfd   pollfd[3];
+   int             pollfd_len;
+   int             quiet;
+   int             verbosity;
+   int             start_port;
+   const char    * logfile;
+   uint8_t       * buff;
+   size_t          buff_len;
 
    // getopt options
    static char   short_opt[] = "b:ho:p:qvV";
@@ -177,8 +185,7 @@ int main(int argc, char * argv[])
    };
 
    // sets default values
-   memset(&cnf, 0, sizeof(cnf));
-   cnf.start_port = 19840;
+   start_port = 19840;
 
    // loops through arguments
    while((c = getopt_long(argc, argv, short_opt, long_opt, &opt_index)) != -1)
@@ -190,7 +197,7 @@ int main(int argc, char * argv[])
          break;
 
          case 'b':
-         cnf.buff_len = atol(optarg);
+         buff_len = atol(optarg);
          break;
 
          case 'h':
@@ -198,15 +205,15 @@ int main(int argc, char * argv[])
          return(0);
 
          case 'o':
-         cnf.logfile = optarg;
+         logfile = optarg;
          break;
 
          case 'p':
-         cnf.start_port = (int)atol(optarg);
+         start_port = (int)atol(optarg);
          break;
 
          case 'q':
-         cnf.quiet = 1;
+         quiet = 1;
          break;
 
          case 'V':
@@ -214,7 +221,7 @@ int main(int argc, char * argv[])
          return(0);
 
          case 'v':
-         cnf.verbosity++;
+         verbosity++;
          break;
 
          case '?':
@@ -242,130 +249,133 @@ int main(int argc, char * argv[])
    pargv = &argv[optind];
 
    // allocates buffer
-   if (!(cnf.buff_len))
-      cnf.buff_len = 4096;
-   if ((cnf.verbosity))
-      fprintf(stderr, "%s: allocating %i byte buffer...\n", PROGRAM_NAME, (int)cnf.buff_len);
-   if ((cnf.buff = malloc(cnf.buff_len)) == NULL)
+   if (!(buff_len))
+      buff_len = 4096;
+   if ((verbosity))
+      fprintf(stderr, "%s: allocating %i byte buffer...\n", PROGRAM_NAME, (int)buff_len);
+   if ((buff = malloc(buff_len)) == NULL)
    {
       fprintf(stderr, "%s: out of virtual memory\n", PROGRAM_NAME);
       return(1);
    };
 
    // initializes pipedump instance
-   if ((cnf.pd = pd_init(pargv[0], pargv)) == NULL)
+   if ((pd = pd_init(pargv[0], pargv)) == NULL)
    {
       perror("pd_init()");
       return(1);
    };
 
    // open output log
-   if ((cnf.verbosity))
-      fprintf(stderr, "%s: opening logfile \"%s\"...\n", PROGRAM_NAME, cnf.logfile);
-   if ((cnf.fd = pd_openlog(cnf.pd, cnf.logfile, 0644)) == -1)
+   if ((verbosity))
+      fprintf(stderr, "%s: opening logfile \"%s\"...\n", PROGRAM_NAME, logfile);
+   if (pd_openlog(pd, logfile, 0644) == -1)
    {
       perror("pd_openlog()");
-      pd_free(&cnf.pd);
+      pd_free(&pd);
       return(1);
    };
 
    // logs command to be executed
-   len = snprintf(buff, 1024, "%s (%s) %s", PROGRAM_NAME, PACKAGE_NAME, PACKAGE_VERSION);
-   pd_log(cnf.pd, buff, len, 0xFFFF);
+   len = snprintf((char *)buff, 1024, "%s (%s) %s", PROGRAM_NAME, PACKAGE_NAME, PACKAGE_VERSION);
+   pd_log(pd, buff, len, 0xFFFF);
    buff[0] = '\0';
-   strncat(buff, "Executing: ", 1024);
+   strncat((char *)buff, "Executing: ", 1024);
    for(pos = 0; pargv[pos]; pos++)
    {
-      strncat(buff, pargv[pos], 1024);
-      strncat(buff, " ", 1024);
+      strncat((char *)buff, pargv[pos], 1024);
+      strncat((char *)buff, " ", 1024);
    };
-   pd_log(cnf.pd, buff, strlen(buff), 0xFFFF);
+   pd_log(pd, buff, strlen((char *)buff), 0xFFFF);
 
    // executes command
-   if ((cnf.verbosity))
+   if ((verbosity))
       fprintf(stderr, "%s: executing \"%s\"...\n", PROGRAM_NAME, pargv[0]);
-   if (pd_fork(cnf.pd) == -1)
+   if (pd_fork(pd) == -1)
    {
       perror("pd_fork()");
-      pd_free(&cnf.pd);
+      pd_free(&pd);
       return(1);
    };
 
    // setups polling info
-   if ((cnf.verbosity))
+   if ((verbosity))
       fprintf(stderr, "%s: saving pipes...\n", PROGRAM_NAME);
-   pd_get_option(cnf.pd, PIPEDUMP_PID,    &cnf.pid);
-   cnf.pollfd[0].fd = STDIN_FILENO;
-   cnf.pollfd[1].fd = pd_fildes(cnf.pd, PIPEDUMP_STDOUT);
-   cnf.pollfd[2].fd = pd_fildes(cnf.pd, PIPEDUMP_STDERR);
-   for(pos = 0; pos < 3; pos++)
-      cnf.pollfd[pos].events = POLLIN | POLLPRI | POLLERR | POLLHUP | POLLRDBAND;
+   pd_get_option(pd, PIPEDUMP_PID,    &pid);
+   pollfd[2].fd = STDIN_FILENO;
+   pollfd[1].fd = pd_fildes(pd, PIPEDUMP_STDOUT);
+   pollfd[0].fd = pd_fildes(pd, PIPEDUMP_STDERR);
+   pollfd_len = 3;
+   for(pos = 0; pos < pollfd_len; pos++)
+      pollfd[pos].events = POLLIN | POLLPRI | POLLERR | POLLHUP | POLLRDBAND;
 
    // loops until exit or error
-   if ((cnf.verbosity))
+   if ((verbosity))
       fprintf(stderr, "%s: entering run loop...\n", PROGRAM_NAME);
-   while ((ret = poll(cnf.pollfd, 3, -1)) > 0)
+   while ((ret = poll(pollfd, pollfd_len, -1)) > 0)
    {
       // checks STDIN for data
-      if (cnf.pollfd[0].revents & (POLLPRI|POLLIN))
+      if (pollfd[2].revents & (POLLPRI|POLLIN))
       {
-         while((len = read(STDIN_FILENO, cnf.buff, cnf.buff_len)) > 0)
+         while((len = read(STDIN_FILENO, buff, buff_len)) > 0)
          {
-            if ((cnf.verbosity))
+            if ((verbosity))
                fprintf(stderr, "%s: logging %i bytes for STDIN\n", PROGRAM_NAME, (int)len);
-            pd_write(cnf.pd, PIPEDUMP_STDIN, cnf.buff, len);
-            pd_log(cnf.pd, cnf.buff, len, 0);
+            pd_write(pd, PIPEDUMP_STDIN, buff, len);
+            pd_log(pd, buff, len, 0);
          };
       };
 
       // checks PIPEOUT for data
-      if (cnf.pollfd[1].revents & (POLLPRI|POLLIN))
+      if (pollfd[1].revents & (POLLPRI|POLLIN))
       {
-         while((len = read(cnf.pollfd[1].fd, cnf.buff, cnf.buff_len)) > 0)
+         while((len = read(pollfd[1].fd, buff, buff_len)) > 0)
          {
-            if ((cnf.verbosity))
+            if ((verbosity))
                fprintf(stderr, "%s: logging %i bytes for STDOUT\n", PROGRAM_NAME, (int)len);
-            pd_write(cnf.pd, STDOUT_FILENO, cnf.buff, len);
-            pd_log(cnf.pd, cnf.buff, len, 1);
+            pd_write(pd, STDOUT_FILENO, buff, len);
+            pd_log(pd, buff, len, 1);
          };
       };
 
       // checks PIPEERR for data
-      if (cnf.pollfd[2].revents & (POLLPRI|POLLIN))
+      if (pollfd[0].revents & (POLLPRI|POLLIN))
       {
-         while((len = read(cnf.pollfd[2].fd, cnf.buff, cnf.buff_len)) > 0)
+         while((len = read(pollfd[2].fd, buff, buff_len)) > 0)
          {
-            if ((cnf.verbosity))
+            if ((verbosity))
                fprintf(stderr, "%s: logging %i bytes for STDERR\n", PROGRAM_NAME, (int)len);
-            pd_write(cnf.pd, STDERR_FILENO, cnf.buff, len);
-            pd_log(cnf.pd, cnf.buff, len, 2);
+            pd_write(pd, STDERR_FILENO, buff, len);
+            pd_log(pd, buff, len, 2);
          };
       };
 
       // close pipe if STDIN is closed
-      if (cnf.pollfd[0].revents & POLLHUP)
+      if (pollfd[2].revents & POLLHUP)
       {
-         if ((cnf.verbosity))
+         if ((verbosity))
             fprintf(stderr, "%s: closing STDIN\n", PROGRAM_NAME);
-         pd_close_fd(cnf.pd, PIPEDUMP_STDIN);
+         pd_close_fd(pd, PIPEDUMP_STDIN);
+         pollfd_len = 2;
+         pollfd[2].revents = 0;
       };
 
       // exits if any of the pipes close
-      if ( (cnf.pollfd[1].revents & POLLHUP) || (cnf.pollfd[2].revents & POLLHUP) )
+      if ( (pollfd[1].revents & POLLHUP) || (pollfd[2].revents & POLLHUP) )
       {
-         if ((waitpid(cnf.pid, &ret, 0)) == -1)
+         if ((waitpid(pid, &ret, 0)) == -1)
             perror("waitid()");
 
          // return with exit code of child
-         if ((cnf.verbosity))
+         if ((verbosity))
             fprintf(stderr, "%s: exiting with status %i\n", PROGRAM_NAME, WEXITSTATUS(ret));
-         pd_free(&cnf.pd);
+         pd_free(&pd);
          return(WEXITSTATUS(ret));
       };
    };
 
    // closes files
-   pd_free(&cnf.pd);
+   pd_free(&pd);
 
    return(0);
 }

@@ -79,5 +79,6 @@ The command any any arguments to be executed by \fBpipedump\fR.
 Report bugs to David M. Syzdek <@PACKAGE_BUGREPORT@>.
 
 .SH "SEE ALSO"
-.BR tcpdump (1)
+.BR tcpdump (1),
+.BR tee (1)
 .\" end of man page

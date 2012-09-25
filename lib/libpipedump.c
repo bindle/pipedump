@@ -243,8 +243,19 @@ int pd_openlog(pipedump_t * pd, const char * logfile, mode_t mode)
 {
    // declare local vars
    int      fd;
-   unsigned uvar;
-   int      var;
+   union
+   {
+      struct
+      {
+         uint32_t       magic_number;
+         uint32_t       version;
+         int32_t        thiszone;
+         uint32_t       sigfigs;
+         uint32_t       snaplen;
+         uint32_t       network;
+      } members;
+      uint8_t bytes[24];
+   } header;
 
    assert((pd != NULL)      && "pd must not be NULL");
    assert((logfile != NULL) && "logfile must not be NULL");
@@ -256,29 +267,20 @@ int pd_openlog(pipedump_t * pd, const char * logfile, mode_t mode)
    if ((fd = open(logfile, O_WRONLY|O_CREAT|O_TRUNC, mode)) == -1)
       return(-1);
 
-   // print header (magic_number)
-   uvar = 0xa1b2c3d4;
-   write(fd, &uvar, sizeof(uvar));
+   // calculate pcap header
+   header.members.magic_number = 0xa1b2c3d4;
+   header.members.version      = 0x00020004;  // 2.4
+   header.members.thiszone     = 0;
+   header.members.sigfigs      = 0;
+   header.members.snaplen      = 65535;
+   header.members.network      = 101;         // LINKTYPE_RAW
 
-   // print header (version_major/version_minor)
-   uvar = 0x00020004;
-   write(fd, &uvar, sizeof(uvar));
-
-   // print header (thiszone)
-   var = 0;
-   write(fd, &var, sizeof(var));
-
-   // print header (sigfigs)
-   uvar = 0;
-   write(fd, &uvar, sizeof(uvar));
-
-   // print header (snaplen)
-   uvar = 65535;
-   write(fd, &uvar, sizeof(uvar));
-
-   // print header (network)
-   uvar = 101;
-   write(fd, &uvar, sizeof(uvar));
+   // write header to log file
+   if (write(fd, header.bytes, 24) == -1)
+   {
+      close(fd);
+      return(-1);
+   };
 
    pd->logfd = fd;
 

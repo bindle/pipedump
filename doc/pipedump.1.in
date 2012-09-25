@@ -1,0 +1,83 @@
+.\"
+.\" Pipe Dump Utility & Library
+.\" Copyright (C) 2012 Bindle Binaries <syzdek@bindlebinaries.com>.
+.\"
+.\" @BINDLE_BINARIES_BSD_LICENSE_START@
+.\"
+.\" Redistribution and use in source and binary forms, with or without
+.\" modification, are permitted provided that the following conditions are
+.\" met:
+.\"
+.\"    * Redistributions of source code must retain the above copyright
+.\"      notice, this list of conditions and the following disclaimer.
+.\"    * Redistributions in binary form must reproduce the above copyright
+.\"      notice, this list of conditions and the following disclaimer in the
+.\"      documentation and/or other materials provided with the distribution.
+.\"    * Neither the name of Bindle Binaries nor the
+.\"      names of its contributors may be used to endorse or promote products
+.\"      derived from this software without specific prior written permission.
+.\"
+.\" THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS
+.\" IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
+.\" THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
+.\" PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL BINDLE BINARIES BE LIABLE FOR
+.\" ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+.\" DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
+.\" SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
+.\" CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
+.\" LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
+.\" OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
+.\" SUCH DAMAGE.
+.\"
+.\" @BINDLE_BINARIES_BSD_LICENSE_END@
+.\"
+.\" doc/pipedump.1.in man page for pipedump
+.\"
+.TH "PIPEDUMP" "1" "@RELEASE_MONTH@" "@PACKAGE_TARNAME@ @PACKAGE_VERSION@" "User Commands"
+.SH NAME
+pipedump \- Logs the STDIN, STDOUT, and STDERR of a program in a CPAP formatted file.
+
+.SH SYNOPSIS
+\fBpipedump\fR [\fB-b\fR \fIlength\fR] [\fB-d\fR] [\fB--verbose\fR | \fB-v\fR] \fB-o\fR \fIfile\fR -- [\fIcommand\fR]
+.sp
+\fBpipedump\fR [\fB--help\fR | \fB-h\fR] [\fB--version\fR | \fB-V\fR]
+
+.SH DESCRIPTION
+The \fBpipedump\fR forks a process and then executes the specified command,
+acting as a proxy for \fBSTDIN\fR, \fBSTDOUT\fR, and \fBSTDERR\fR.  Debug data
+and data sent to \fBSTDIN\fR are recorded as a IPv6 UDP packets traversing from
+\fI::1\fR to \fI::\fR. Data received from \fBSTDOUT\fR and \fBSTDERR\fR are
+recorded as a IPv6 UDP packets traversing from \fI::\fR to \fI::1\fR. \fBSTDIN\fR is
+recorded as port \fI19840\fR, STDOUT as port \fI19841\fR, \fBSTDERR\fR as port
+\fI19842\fR and debug information as port \fI65535\fR. The captured data is
+recorded in a file which can be read by network analyzing tools capable of
+parsing PCAP files.
+
+.SH OPTIONS
+.TP
+\fB-b\fR \fIlength\fR
+Allocate a buffer of \fIlength\fR bytes in length. The buffer size limits the
+number of bytes read from \fBSTDIN\fR, \fBSTDOUT\fR, \fBSTDERR\fR with each
+pass and the maximum payload size of recorded UDP packets.
+.TP
+\fB-d\fR
+Instructs \fBpipedump\fR to record its version number, envrionment variables,
+and command to execute to the PCAP log file before executing the command.
+.TP
+\fB-v\fR, \fB--verbose\fR
+Enables verbose messages to be printed to STDERR.
+.TP
+\fB-o\fR \fIfile\fR
+Instructs \fBpipedump\fR to write data to the \fIfile\fR.  If \fIfile\fR already
+exists, a PCAP file header is not written and data is appended to the end of the
+file.
+.TP
+\fIcommand\fR
+The command any any arguments to be executed by \fBpipedump\fR.
+
+.SH "REPORTING BUGS"
+Report bugs to David M. Syzdek <@PACKAGE_BUGREPORT@>.
+
+.SH "SEE ALSO"
+.BR tcpdump (1)
+.\" end of man page

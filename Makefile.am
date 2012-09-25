@@ -57,7 +57,7 @@ check_PROGRAMS				=
 doc_DATA				=
 include_HEADERS				= include/pipedump.h
 lib_LTLIBRARIES				= lib/libpipedump.la
-#man_MANS				= doc/pipedump.1
+man_MANS				= doc/pipedump.1
 info_TEXINFOS				=
 noinst_LTLIBRARIES			=
 noinst_HEADERS				=
@@ -133,7 +133,7 @@ EXTRA_DIST				= include/git-package-version.txt \
 					  contrib/bindletools/build-aux/autogen.sh \
 					  contrib/bindletools/build-aux/git-package-version.sh \
 					  contrib/bindletools/m4/bindle.m4 \
-					  doc/pipedump.1 \
+					  doc/pipedump.1.in \
 					  lib/libpipedump.sym
 CLEANFILES				= \
 					  $(builddir)/a.out   $(srcdir)/a.out \
@@ -155,6 +155,9 @@ build-aux/git-package-version.txt:
 
 autoreconf:
 	autoreconf -i -f $(ACLOCAL_AMFLAGS) $(top_srcdir)
+
+doc/pipedump.1: Makefile $(srcdir)/doc/pipedump.1.in
+	@$(do_subst_dt)
 
 update:
 	git --git-dir=$(top_srcdir)/.git pull 2> /dev/null || exit 0

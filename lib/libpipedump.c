@@ -368,6 +368,10 @@ int pd_get_option(pipedump_t * pd, int option, void * outvalue)
       *((pid_t *)outvalue) = pd->pid;
       return(0);
 
+      case PIPEDUMP_START_PORT:
+      *((int *)outvalue) = pd->pcap_sport;
+      return(0);
+
       case PIPEDUMP_STDERR:
       *((int *)outvalue) = pd->pipeerr;
       return(0);
@@ -385,6 +389,23 @@ int pd_get_option(pipedump_t * pd, int option, void * outvalue)
    };
    return(1);
 }
+
+
+int pd_set_option(pipedump_t * pd, int option, void * outvalue)
+{
+   assert((pd != NULL) && "pd_get_option() cannot accept a NULL value");
+   switch(option)
+   {
+      case PIPEDUMP_START_PORT:
+      pd->pcap_sport = *((int *)outvalue);
+      return(0);
+
+      default:
+      break;
+   };
+   return(1);
+}
+
 
 
 pipedump_t * pd_init(const char *file, char *const argv[])

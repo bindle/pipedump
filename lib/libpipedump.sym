@@ -60,6 +60,7 @@ pd_write
 pd_fildes
 pd_free
 pd_get_option
+pd_set_option
 pd_init
 #
 # Library meta information

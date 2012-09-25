@@ -251,6 +251,7 @@ int main(int argc, char * argv[])
       free(buff);
       return(1);
    };
+   pd_set_option(pd, PIPEDUMP_START_PORT, &start_port);
 
    // open output log
    if ((verbosity))

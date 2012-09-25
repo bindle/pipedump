@@ -123,10 +123,11 @@
 
 
 // Pipe Dump Options
-#define PIPEDUMP_STDIN    -10
-#define PIPEDUMP_STDOUT   -11
-#define PIPEDUMP_STDERR   -12
-#define PIPEDUMP_PID      8
+#define PIPEDUMP_STDIN      -10
+#define PIPEDUMP_STDOUT     -11
+#define PIPEDUMP_STDERR     -12
+#define PIPEDUMP_PID          1
+#define PIPEDUMP_START_PORT   2
 
 
 /////////////////
@@ -160,6 +161,7 @@ PIPEDUMP_F(int) pd_log(pipedump_t * pd, const void * buff, size_t nbyte, int tag
 /// @name Pipe management
 PIPEDUMP_F(int) pd_fildes(pipedump_t * pd, int fildes);
 PIPEDUMP_F(void) pd_free(pipedump_t ** pdp);
+PIPEDUMP_F(int) pd_set_option(pipedump_t * pd, int option, void * outvalue);
 PIPEDUMP_F(int) pd_get_option(pipedump_t * pd, int option, void * outvalue);
 PIPEDUMP_F(pipedump_t *) pd_init(const char * file, char * const argv[]);
 PIPEDUMP_F(int) pd_fork(pipedump_t * pd);

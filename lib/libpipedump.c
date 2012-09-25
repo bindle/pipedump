@@ -272,7 +272,7 @@ int pd_openlog(pipedump_t * pd, const char * logfile, mode_t mode)
    err = stat(logfile, &sb);
 
    // open output log
-   if ((fd = open(logfile, O_WRONLY|O_CREAT|O_TRUNC, mode)) == -1)
+   if ((fd = open(logfile, O_WRONLY|O_CREAT, mode)) == -1)
       return(-1);
 
    // calculate pcap header

@@ -214,8 +214,8 @@ int pd_log(pipedump_t * pd, const void * buf, size_t nbyte, int srcfd)
 
    // computes IPv6 header
    header.members.ipv6_version            = 0x60;
-   header.members.ipv6_payload_length[1]  = ((nbyte + 8) >> 8) & 0xFF;
-   header.members.ipv6_payload_length[0]  = ((nbyte + 8) >> 0) & 0xFF;
+   header.members.ipv6_payload_length[0]  = ((nbyte + 8) >> 8) & 0xFF;
+   header.members.ipv6_payload_length[1]  = ((nbyte + 8) >> 0) & 0xFF;
    header.members.ipv6_next_header        = 17;
    header.members.ipv6_hop_limit          = 7;
    memcpy(header.members.ipv6_src_addr, src_addr, 16);

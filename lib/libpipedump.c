@@ -103,7 +103,7 @@ ssize_t pd_copy(pipedump_t * pd, int f1, int f2, void * buf, size_t nbyte)
    assert((nbyte != 0)  && "nbyte must not be 0");
    if ((len = pd_read(pd, f1, buf, nbyte)) == -1)
       return(-1);
-   return(pd_write(pd, f2, buf, len));
+   return(((len)) ? pd_write(pd, f2, buf, len) : 0);
 }
 
 

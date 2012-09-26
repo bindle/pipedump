@@ -37,8 +37,8 @@
 AC_PREREQ([2.65])
 
 AC_COPYRIGHT([Copyright (c) 2012 Bindle Binaries <syzdek@bindlebinaries.com>.])
-AC_REVISION(0.1)
-AC_INIT([Pipe Dump Utility & Library],[0.1],[syzdek@bindlebinaries.com],[pipedump])
+AC_REVISION(0.2)
+AC_INIT([Pipe Dump Utility & Library],[0.2],[syzdek@bindlebinaries.com],[pipedump])
 
 AC_SUBST([RELEASE_MONTH],["September 2012"])
 AC_SUBST([PACKAGE_COPYRIGHT], ["Copyright (c) 2012 Bindle Binaries <syzdek@bindlebinaries.com>."])

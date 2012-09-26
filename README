@@ -79,9 +79,10 @@ repository.
 
    Git URLs:
       git://github.com/bindle/pipedump.git
+      git://git.code.sf.net/p/pipedump/code
 
    Downloading Source:
-      $ git clone --recursive, git://github.com/bindle/pipedump.git
+      $ git clone --recursive git://github.com/bindle/pipedump.git pipedump
 
    Preparing Source:
       $ cd piepdump

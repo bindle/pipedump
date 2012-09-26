@@ -3,6 +3,7 @@ Pipe Dump Utility & Library
 ===========================
 
 #### Development Version
+   - Adding autoconf checks for environ symbol. (syzdek)
 
 #### 0.2   (2012-09-25)
    - Fixing byte order of IPv6 payload length field in logging output. (syzdek)

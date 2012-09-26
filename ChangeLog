@@ -4,6 +4,8 @@ Pipe Dump Utility & Library
 
 #### Development Version
    - Fixing byte order of IPv6 payload length field in logging output. (syzdek)
+   - Fixing build scripts for configure is run after every Git commit. (syzdek)
+   - Moving IDE files to root of source tree. (syzdek)
 
 #### 0.1   (2012-09-25)
    - Initial release of project. (syzdek)

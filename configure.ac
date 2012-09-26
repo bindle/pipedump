@@ -104,6 +104,9 @@ AC_BINDLE_ENABLE_WARNINGS
 # enables getopt_long if header and functions were found
 AC_CHECK_HEADERS([getopt.h], [AC_DEFINE_UNQUOTED(USE_GETOPT_LONG, 1, [Use GNU getopt_long])])
 
+# Symbol checks
+AC_CHECK_DECLS([environ])
+
 # determine PACKAGE_VERSION via Git
 AC_BINDLE_GIT_PACKAGE_VERSION([contrib/bindletools/build-aux/git-package-version.sh])
 

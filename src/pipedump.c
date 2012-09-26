@@ -59,7 +59,9 @@
 #include <sys/time.h>
 #include <sys/wait.h>
 
+#if !HAVE_DECL_ENVIRON
 extern char **environ;
+#endif
 
 
 ///////////////////

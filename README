@@ -58,16 +58,10 @@ Community
 ---------
 
    Source Code Repository:  
-   https://github.com/bindle/LdapKit/
-
-   Documentation:  
-   http://bindle.github.com/LdapKit/
-
-   Wiki:  
-   https://github.com/bindle/iOSPorts/wiki
+   https://github.com/bindle/pipedump/
 
    Issue Tracking:  
-   https://github.com/bindle/iOSPorts/issues
+   https://github.com/bindle/pipedump/issues
 
 
 Source Code
@@ -77,14 +71,17 @@ The source code for this project is maintained using git (http://git-scm.com).
 The following contains information to checkout the source code from the git
 repository.
 
+   Download URLs:
+      http://sourceforge.net/projects/pipedump/files/
+
    Git URLs:
       git://github.com/bindle/pipedump.git
       git://git.code.sf.net/p/pipedump/code
 
-   Downloading Source:
+   Downloading Source with Git:
       $ git clone --recursive git://github.com/bindle/pipedump.git pipedump
 
-   Preparing Source:
+   Preparing Source from Git:
       $ cd piepdump
       $ autoreconf -I ./m4/ -I ./contrib/bindletools/m4/ -i
 

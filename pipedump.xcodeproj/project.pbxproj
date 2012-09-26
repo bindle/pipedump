@@ -37,14 +37,14 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
-		A02AAEB6160E6DD2002856CD /* acinclude.m4 */ = {isa = PBXFileReference; explicitFileType = text.script; name = acinclude.m4; path = ../acinclude.m4; sourceTree = "<group>"; };
-		A02AAEB7160E6DD2002856CD /* configure.ac */ = {isa = PBXFileReference; explicitFileType = text.script; name = configure.ac; path = ../configure.ac; sourceTree = "<group>"; };
-		A02AAEB8160E6DD2002856CD /* COPYING */ = {isa = PBXFileReference; lastKnownFileType = text; name = COPYING; path = ../COPYING; sourceTree = "<group>"; };
-		A02AAEBA160E6DD2002856CD /* README */ = {isa = PBXFileReference; lastKnownFileType = text; name = README; path = ../README; sourceTree = "<group>"; };
-		A02AAEBC160E708B002856CD /* Makefile.am */ = {isa = PBXFileReference; explicitFileType = sourcecode.make; indentWidth = 8; name = Makefile.am; path = ../Makefile.am; sourceTree = SOURCE_ROOT; tabWidth = 8; usesTabs = 1; };
+		A02AAEB6160E6DD2002856CD /* acinclude.m4 */ = {isa = PBXFileReference; explicitFileType = text.script; path = acinclude.m4; sourceTree = "<group>"; };
+		A02AAEB7160E6DD2002856CD /* configure.ac */ = {isa = PBXFileReference; explicitFileType = text.script; path = configure.ac; sourceTree = "<group>"; };
+		A02AAEB8160E6DD2002856CD /* COPYING */ = {isa = PBXFileReference; lastKnownFileType = text; path = COPYING; sourceTree = "<group>"; };
+		A02AAEBA160E6DD2002856CD /* README */ = {isa = PBXFileReference; lastKnownFileType = text; path = README; sourceTree = "<group>"; };
+		A02AAEBC160E708B002856CD /* Makefile.am */ = {isa = PBXFileReference; explicitFileType = sourcecode.make; indentWidth = 8; path = Makefile.am; sourceTree = "<group>"; tabWidth = 8; usesTabs = 1; };
 		A02AAECB160E7324002856CD /* bindletools.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = bindletools.xcodeproj; path = bindletools/bindletools.xcodeproj; sourceTree = "<group>"; };
-		A02AAED1160E7447002856CD /* AUTHORS */ = {isa = PBXFileReference; lastKnownFileType = text; name = AUTHORS; path = ../AUTHORS; sourceTree = "<group>"; };
-		A02AAED2160E7447002856CD /* ChangeLog */ = {isa = PBXFileReference; lastKnownFileType = text; name = ChangeLog; path = ../ChangeLog; sourceTree = "<group>"; };
+		A02AAED1160E7447002856CD /* AUTHORS */ = {isa = PBXFileReference; lastKnownFileType = text; path = AUTHORS; sourceTree = "<group>"; };
+		A02AAED2160E7447002856CD /* ChangeLog */ = {isa = PBXFileReference; lastKnownFileType = text; path = ChangeLog; sourceTree = "<group>"; };
 		A02AAEE9160E9BD0002856CD /* pipedump */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = pipedump; sourceTree = BUILT_PRODUCTS_DIR; };
 		A02AAEF7160E9BE9002856CD /* liblibpipedump.dylib */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.dylib"; includeInIndex = 0; path = liblibpipedump.dylib; sourceTree = BUILT_PRODUCTS_DIR; };
 		A02AAEFC160E9DF2002856CD /* pipedump.1.in */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = pipedump.1.in; sourceTree = "<group>"; };
@@ -101,8 +101,7 @@
 			isa = PBXGroup;
 			children = (
 			);
-			name = "build-aux";
-			path = "../build-aux";
+			path = "build-aux";
 			sourceTree = SOURCE_ROOT;
 		};
 		A02AAEC4160E72BA002856CD /* lib */ = {
@@ -112,8 +111,7 @@
 				A02AAF01160EE3A8002856CD /* libpipedump.h */,
 				A02AAF02160EE3A8002856CD /* libpipedump.sym */,
 			);
-			name = lib;
-			path = ../lib;
+			path = lib;
 			sourceTree = SOURCE_ROOT;
 		};
 		A02AAEC8160E72BA002856CD /* src */ = {
@@ -121,8 +119,7 @@
 			children = (
 				A02AAF05160EF7B5002856CD /* pipedump.c */,
 			);
-			name = src;
-			path = ../src;
+			path = src;
 			sourceTree = SOURCE_ROOT;
 		};
 		A02AAECA160E72FF002856CD /* contrib */ = {
@@ -130,8 +127,7 @@
 			children = (
 				A02AAECB160E7324002856CD /* bindletools.xcodeproj */,
 			);
-			name = contrib;
-			path = ../contrib;
+			path = contrib;
 			sourceTree = SOURCE_ROOT;
 		};
 		A02AAECC160E7324002856CD /* Products */ = {
@@ -146,8 +142,7 @@
 			children = (
 				A02AAEFD160ED26C002856CD /* pipedump.h */,
 			);
-			name = include;
-			path = ../include;
+			path = include;
 			sourceTree = SOURCE_ROOT;
 		};
 		A02AAED9160E9B72002856CD /* Products */ = {
@@ -164,8 +159,7 @@
 			children = (
 				A02AAEFC160E9DF2002856CD /* pipedump.1.in */,
 			);
-			name = doc;
-			path = ../doc;
+			path = doc;
 			sourceTree = SOURCE_ROOT;
 		};
 /* End PBXGroup section */

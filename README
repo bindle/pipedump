@@ -16,8 +16,9 @@ Contents
    1. Disclaimer
    2. Software Requirements
    3. Maintainers
-   4. Community
-   5. Source Code
+   4. Examples
+   5. Community
+   6. Source Code
 
 
 Disclaimer
@@ -52,6 +53,47 @@ Maintainers
    David M. Syzdek,  
    Bindle Binaries,  
    syzdek@bindlebinaries.com
+
+
+Examples
+--------
+
+   Command Line
+   ------------
+      
+      $ cat /etc/resolv.conf | pipedump -dd -o file.pcap -- grep \
+        -i nameserver
+
+
+   SSH Authorized Keys
+   -------------------
+
+   Pipedump can be inserted into an authorized_keys file to record an SSH
+   session.  This is useful for debugging utilities which use SSH for
+   authentication and transport such as Gitolite.
+
+   Original Entry:
+
+      ssh-rsa AAAA..ooU= user@host
+
+   Updated Entry:
+
+      command="pipedump -dd -o ssh.pcap -- ${SSH_ORIGINAL_COMMAND}" ssh-rsa AAAA..ooU= user@host
+
+   Note that the actual RSA key in the above examples has been
+   truncated to make the lines easier to read.
+
+
+   Display libpcap File
+   --------------------
+
+   Display payload as hexdump:
+
+       $ tcpdump -qns 0 -X -r file.pcap
+
+   Display payload as ASCII text:
+
+       $ tcpdump -qns 0 -A -r file.pcap
 
 
 Community

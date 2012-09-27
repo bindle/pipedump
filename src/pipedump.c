@@ -276,9 +276,9 @@ int main(int argc, char * argv[])
       pd_log(pd, buff, len, 0xFFFF);
 
       // logs environment variables
-      if (debug > 1)
+      if (debug > 2)
          for(pos = 0; environ[pos]; pos++)
-            pd_log(pd, environ[pos], strlen(environ[pos]), 0xFFFF);
+            pd_log(pd, environ[pos], strlen(environ[pos]), 0xFFFE);
 
       // logs command
       buff[0] = '\0';
@@ -302,10 +302,17 @@ int main(int argc, char * argv[])
       return(1);
    };
 
+   // retrieves pid
+   pd_get_option(pd, PIPEDUMP_PID,    &pid);
+   if ((debug > 1))
+   {
+      len = snprintf((char *)buff, 1024, "pid: %i", pid);
+      pd_log(pd, buff, len, 0xFFFD);
+   };
+
    // setups polling info
    if ((verbosity))
       fprintf(stderr, "%s: saving pipes...\n", PROGRAM_NAME);
-   pd_get_option(pd, PIPEDUMP_PID,    &pid);
    pollfd[2].fd = STDIN_FILENO;
    pollfd[1].fd = pd_fildes(pd, PIPEDUMP_STDOUT);
    pollfd[0].fd = pd_fildes(pd, PIPEDUMP_STDERR);
